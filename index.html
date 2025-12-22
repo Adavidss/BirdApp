@@ -1,0 +1,3766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bird Explorer - Discover Amazing Birds</title>
+
+    <!-- App Icon and iOS Home Screen Support -->
+    <link rel="icon" type="image/png" href="https://www.kidsdc.org/BirdApp/BirdApp.png">
+    <link rel="apple-touch-icon" href="https://www.kidsdc.org/BirdApp/BirdApp.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Bird Explorer">
+
+    <style>
+        /* ========================================
+           GLOBAL STYLES & RESET
+           ======================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #F0F8F5 0%, #E0F2F1 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ========================================
+           HEADER STYLES
+           ======================================== */
+        header {
+            text-align: center;
+            padding: 20px 15px 15px 15px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: #2D5016;
+            margin-bottom: 5px;
+        }
+        
+        h1 img {
+            max-width: 50px;
+            max-height: 50px;
+            width: auto;
+            height: auto;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: #4A7C59;
+            font-style: italic;
+        }
+
+        /* ========================================
+           MAIN CONTENT AREA
+           ======================================== */
+        .main-content {
+            padding: 20px 15px 90px 15px;
+            max-width: 800px;
+            margin: 0 auto;
+            min-height: calc(100vh - 150px);
+        }
+
+        /* Section visibility */
+        .section {
+            display: none;
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #20B2AA;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-icon {
+            width: 32px;
+            height: 32px;
+        }
+
+        .section-description {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        /* ========================================
+           BOTTOM NAVIGATION TOOLBAR
+           ======================================== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 8px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #999;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            color: #20B2AA;
+        }
+
+        .nav-item.active {
+            color: #20B2AA;
+            font-weight: 600;
+        }
+
+        .nav-item.active .nav-icon {
+            transform: scale(1.1);
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-icon svg {
+            width: 100%;
+            height: 100%;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+        }
+
+        /* ========================================
+           BUTTON STYLES
+           ======================================== */
+        button {
+            background: linear-gradient(135deg, #20B2AA, #17A2B8);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        button.secondary {
+            background: linear-gradient(135deg, #4A7C59, #2D5016);
+        }
+
+        button.tertiary {
+            background: linear-gradient(135deg, #87CEEB, #20B2AA);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
+        /* ========================================
+           INPUT STYLES
+           ======================================== */
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #E0F2F1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #20B2AA;
+            box-shadow: 0 0 0 3px rgba(32, 178, 170, 0.1);
+        }
+
+        /* ========================================
+           BIRD DISPLAY STYLES
+           ======================================== */
+        .bird-display {
+            margin-top: 20px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .bird-display.show {
+            opacity: 1;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .bird-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Autocomplete suggestions */
+        .autocomplete-container {
+            position: relative;
+        }
+
+        .autocomplete-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #E0F2F1;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .autocomplete-suggestions.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            border-bottom: 1px solid #F0F8F5;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item:hover {
+            background: #F0F8F5;
+        }
+
+        .autocomplete-item.active {
+            background: #E0F2F1;
+        }
+
+        .autocomplete-item .bird-common-name {
+            font-weight: 600;
+            color: #2D5016;
+        }
+
+        .autocomplete-item .bird-sci-name {
+            font-size: 0.85rem;
+            color: #4A7C59;
+            font-style: italic;
+        }
+
+        .bird-image.blurred {
+            filter: blur(20px);
+            transition: filter 0.6s ease;
+        }
+
+        .bird-image.unblurred {
+            filter: blur(0);
+        }
+
+        .bird-name {
+            font-size: 1.6rem;
+            color: #2D5016;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .bird-scientific {
+            font-size: 1rem;
+            color: #4A7C59;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+
+        .bird-summary {
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.7;
+            margin: 15px 0;
+        }
+
+        .wikipedia-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: #17A2B8;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+            padding: 10px 20px;
+            background: #E0F2F1;
+            border-radius: 8px;
+        }
+
+        .wikipedia-link:hover {
+            color: #20B2AA;
+            background: #D0E8E6;
+        }
+
+        /* ========================================
+           LOADING & PLACEHOLDER STYLES
+           ======================================== */
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: #4A7C59;
+        }
+
+        .spinner {
+            border: 4px solid #E0F2F1;
+            border-top: 4px solid #20B2AA;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        .error-message {
+            background: #FFE5E5;
+            color: #D32F2F;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #D32F2F;
+            margin-top: 15px;
+        }
+
+        .placeholder {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .placeholder h3 {
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        /* ========================================
+           AUDIO PLAYER STYLES
+           ======================================== */
+        audio {
+            width: 100%;
+            margin: 15px 0;
+            border-radius: 8px;
+            background: #f5f5f5;
+        }
+
+        .audio-info {
+            margin-top: 10px;
+            padding: 12px;
+            background: #F0F8F5;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* ========================================
+           GAME STYLES
+           ======================================== */
+        .game-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 600px) {
+            .game-selector {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .game-selector button {
+            padding: 20px 15px;
+            font-size: 0.9rem;
+        }
+
+        .challenge-type {
+            display: inline-block;
+            background: linear-gradient(135deg, #87CEEB, #20B2AA);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        /* Memory game grid */
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .memory-card {
+            aspect-ratio: 1;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .memory-card:hover {
+            transform: scale(1.05);
+        }
+
+        .memory-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .memory-card.flipped .card-back {
+            display: none;
+        }
+
+        .memory-card.flipped .card-front {
+            display: block;
+        }
+
+        .memory-card.matched {
+            opacity: 0.6;
+            cursor: default;
+        }
+
+        .card-back {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #20B2AA, #17A2B8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+        }
+
+        .card-front {
+            display: none;
+        }
+
+        /* Quiz styles */
+        .quiz-question {
+            font-size: 1.2rem;
+            color: #2D5016;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .quiz-option {
+            background: white;
+            border: 2px solid #E0F2F1;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            color: #333;
+        }
+
+        .quiz-option:hover {
+            border-color: #20B2AA;
+            background: #F0F8F5;
+        }
+
+        .quiz-option.correct {
+            background: #D4EDDA;
+            border-color: #28A745;
+        }
+
+        .quiz-option.incorrect {
+            background: #F8D7DA;
+            border-color: #DC3545;
+        }
+
+        .quiz-option.disabled {
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        /* Game stats */
+        .game-stats {
+            background: #F0F8F5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .stat {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #20B2AA;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* Toggle switch for blur */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #ccc;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #20B2AA;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(30px);
+        }
+
+        /* ========================================
+           ANIMATIONS
+           ======================================== */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ========================================
+           RESPONSIVE DESIGN
+           ======================================== */
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .subtitle {
+                font-size: 1.1rem;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .nav-label {
+                font-size: 0.75rem;
+            }
+
+            .bird-image {
+                height: 400px;
+            }
+
+            .game-selector {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-label {
+                font-size: 0.65rem;
+            }
+
+            .nav-icon {
+                width: 20px;
+                height: 20px;
+            }
+
+            .bird-image {
+                height: 250px;
+            }
+
+            .memory-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Safe area for notched devices */
+        @supports (padding: max(0px)) {
+            .bottom-nav {
+                padding-bottom: max(8px, env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========================================
+         HEADER
+         ======================================== -->
+    <header>
+        <h1 style="display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;">
+            <img src="BirdApp.png" alt="Bird Explorer Logo" style="display: block; width: 50px; height: 50px; object-fit: contain; image-rendering: -webkit-optimize-contrast;">
+            <span style="color: #2D5016;">Bird Explorer</span>
+        </h1>
+        <p class="subtitle">Discover the fascinating world of birds</p>
+    </header>
+
+    <!-- ========================================
+         MAIN CONTENT AREA
+         ======================================== -->
+    <div class="main-content">
+
+        <!-- SECTION 1: RANDOM BIRD (includes Bird of the Day) -->
+        <section id="random-section" class="section active">
+            <h2 class="section-title">
+                <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <circle cx="6.5" cy="6.5" r="1"/>
+                    <circle cx="17.5" cy="6.5" r="1"/>
+                    <circle cx="17.5" cy="17.5" r="1"/>
+                    <circle cx="6.5" cy="17.5" r="1"/>
+                </svg>
+                Random Birds
+            </h2>
+            <p class="section-description">
+                Discover random birds or get your daily featured bird!
+            </p>
+            <button onclick="showRandomBird()">Show Random Bird</button>
+            <button class="secondary" onclick="showBirdOfTheDay()">Bird of the Day</button>
+            <div id="random-bird-display" class="bird-display"></div>
+        </section>
+
+        <!-- SECTION 2: QUICK BIRD LOOKUP -->
+        <section id="search-section" class="section">
+            <h2 class="section-title">
+                <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="M21 21l-4.35-4.35"/>
+                </svg>
+                Quick Bird Lookup
+            </h2>
+            <p class="section-description">
+                Search for any bird by name to see its image and info, or search xeno-canto recordings with filters.
+            </p>
+            
+            <!-- Bird Name Search -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2D5016;">Search by Bird Name:</label>
+            <div class="autocomplete-container">
+                <input
+                    type="text"
+                    id="bird-search-input"
+                    placeholder="Search up birds, e.g. Cackling Goose"
+                    autocomplete="off"
+                    oninput="handleSearchInput()"
+                    onkeydown="handleSearchKeydown(event)"
+                    onfocus="handleSearchInput()"
+                    onblur="setTimeout(hideAutocomplete, 200)"
+                >
+                <div id="autocomplete-suggestions" class="autocomplete-suggestions"></div>
+            </div>
+                <button onclick="searchBird()" style="margin-top: 10px;">Search Bird</button>
+            </div>
+
+            <!-- Xeno-canto Recording Search -->
+            <div style="margin-top: 30px; padding: 20px; background: #F0F8F5; border-radius: 12px; border: 2px solid #E0F2F1;">
+                <h3 style="margin-bottom: 15px; color: #2D5016; font-size: 1.2rem;">🎵 Search Xeno-canto Recordings</h3>
+                <p style="margin-bottom: 15px; color: #666; font-size: 0.9rem;">Search for bird sound recordings with advanced filters</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #2D5016; font-size: 0.9rem;">Sound Type:</label>
+                        <select id="xc-type-input" style="width: 100%; padding: 10px; border: 2px solid #E0F2F1; border-radius: 6px;">
+                            <option value="">Any</option>
+                            <option value="song">Song</option>
+                            <option value="call">Call</option>
+                            <option value="alarm">Alarm</option>
+                            <option value="drumming">Drumming</option>
+                            <option value="flight call">Flight Call</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #2D5016; font-size: 0.9rem;">Quality:</label>
+                        <select id="xc-quality-input" style="width: 100%; padding: 10px; border: 2px solid #E0F2F1; border-radius: 6px;">
+                            <option value="">Any</option>
+                            <option value="A">A (Excellent)</option>
+                            <option value="B">B (Good)</option>
+                            <option value="C">C (Fair)</option>
+                            <option value="D">D (Poor)</option>
+                            <option value="E">E (Very Poor)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #2D5016; font-size: 0.9rem;">Sex:</label>
+                        <select id="xc-sex-input" style="width: 100%; padding: 10px; border: 2px solid #E0F2F1; border-radius: 6px;">
+                            <option value="">Any</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #2D5016; font-size: 0.9rem;">Year:</label>
+                        <input type="number" id="xc-year-input" placeholder="e.g., 2020" min="1900" max="2025" style="width: 100%; padding: 10px; border: 2px solid #E0F2F1; border-radius: 6px;">
+                    </div>
+                </div>
+                
+                <button onclick="searchXenoCantoRecordings()" class="secondary" style="width: 100%; margin-top: 10px;">🔍 Search Recordings</button>
+            </div>
+            
+            <div id="search-results-display" class="bird-display"></div>
+            <div id="xc-results-display" class="bird-display"></div>
+        </section>
+
+        <!-- SECTION 3: BIRD GAMES -->
+        <section id="game-section" class="section">
+            <h2 class="section-title">
+                <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="6" y="4" width="12" height="16" rx="2"/>
+                    <circle cx="12" cy="11" r="2"/>
+                    <path d="M8 8h.01"/>
+                    <path d="M16 8h.01"/>
+                    <path d="M8 16h8"/>
+                </svg>
+                Bird Games
+            </h2>
+            <p class="section-description">
+                Test your bird knowledge with fun games!
+            </p>
+
+            <div id="game-menu" class="game-selector">
+                <button onclick="startGuessGame()">Guess the Bird</button>
+                <button onclick="startMemoryGame()">Memory Match</button>
+                <button onclick="startQuizGame()">Bird Quiz</button>
+                <button onclick="startSoundMatchGame()">Sound Match</button>
+                <button onclick="startTypingGame()">Type the Bird</button>
+                <button onclick="startSpeedMatchGame()">Speed Match</button>
+                <button onclick="startWordScrambleGame()">Word Scramble</button>
+                <button onclick="startTrueFalseGame()">True or False</button>
+                <button onclick="startAlphabetGame()">Alphabet Challenge</button>
+                <button onclick="startQuickFlashGame()">Quick Flash</button>
+                <button onclick="startFlashCardGame()">Flash Cards</button>
+            </div>
+
+            <div id="game-display" class="bird-display"></div>
+        </section>
+
+    </div>
+
+    <!-- ========================================
+         BOTTOM NAVIGATION TOOLBAR
+         ======================================== -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchSection('random-section', this)">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                </svg>
+            </div>
+            <span class="nav-label">Random</span>
+        </button>
+        <button class="nav-item" onclick="switchSection('search-section', this)">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="M21 21l-4.35-4.35"/>
+                </svg>
+            </div>
+            <span class="nav-label">Search</span>
+        </button>
+        <button class="nav-item" onclick="switchSection('game-section', this)">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24">
+                    <rect x="6" y="4" width="12" height="16" rx="2"/>
+                    <circle cx="12" cy="11" r="2"/>
+                </svg>
+            </div>
+            <span class="nav-label">Games</span>
+        </button>
+    </nav>
+
+    <script>
+        /* ========================================
+           CONFIGURATION & API KEYS
+           ======================================== */
+
+        const NUTHATCH_API_KEY = '501ef659-7b02-4083-835b-7ef556f5b9cc';
+        const NUTHATCH_BASE_URL = 'https://nuthatch.lastelm.software/v2/birds';
+        const XENOCANTO_BASE_URL = 'https://xeno-canto.org/api/3/recordings';
+        const XENOCANTO_API_KEY = 'badb982f9b570af4dfcf90cdf0f81430526dff20';
+        const WIKIPEDIA_API_URL = 'https://en.wikipedia.org/api/rest_v1/page/summary';
+
+        /* ========================================
+           FALLBACK BIRD DATABASE - REMOVED
+           Now relying solely on Nuthatch API with Wikipedia fallback
+           ======================================== */
+        const fallbackBirds = []; // Empty array - relying on API only
+
+        /* ========================================
+           GLOBAL STATE
+           ======================================== */
+        let birdCache = [];
+        let combinedBirdList = []; // Merged API + fallback birds
+        let birdsWithSoundCache = []; // Cache of birds that have sounds available
+        let currentGameBird = null;
+        let currentGameType = null;
+        let gameRevealed = false;
+        let memoryCards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let quizScore = 0;
+        let quizTotal = 0;
+        let xcSearchResults = null; // Store xeno-canto search results for pagination
+        let xcCurrentPage = 1;
+        let xcResultsPerPage = 10;
+
+        /* ========================================
+           NAVIGATION FUNCTIONS
+           ======================================== */
+
+        function switchSection(sectionId, navButton) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.remove('active'));
+
+            const selectedSection = document.getElementById(sectionId);
+            if (selectedSection) {
+                selectedSection.classList.add('active');
+            }
+
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            navButton.classList.add('active');
+
+            // Reset game menu when entering games section
+            if (sectionId === 'game-section') {
+                document.getElementById('game-menu').style.display = 'grid';
+                document.getElementById('game-display').innerHTML = '';
+                document.getElementById('game-display').classList.remove('show');
+            }
+
+            // Reset sound section if it exists (for backward compatibility)
+            if (sectionId === 'sound-section') {
+                switchSection('random-section', document.querySelector('.nav-item'));
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* ========================================
+           API HELPER FUNCTIONS
+           ======================================== */
+
+        async function fetchBirdsFromAPI() {
+            try {
+                console.log('Fetching birds from Nuthatch API...');
+                const response = await fetch(`${NUTHATCH_BASE_URL}?hasImg=true&pageSize=100`, {
+                    headers: { 'api-key': NUTHATCH_API_KEY }
+                });
+
+                if (!response.ok) {
+                    console.warn('Nuthatch API response not OK:', response.status);
+                    throw new Error('API request failed');
+                }
+
+                const data = await response.json();
+                console.log('Nuthatch API returned:', data.entities?.length || 0, 'birds');
+
+                if (data.entities && data.entities.length > 0) {
+                    // Log first few bird names for debugging
+                    console.log('Sample birds from API:', data.entities.slice(0, 5).map(b => b.name));
+                }
+
+                return data.entities || [];
+            } catch (error) {
+                console.warn('Nuthatch API error:', error);
+                return null;
+            }
+        }
+
+        /**
+         * Get combined bird list (API + fallback, deduplicated)
+         */
+        async function getCombinedBirdList() {
+            // Return cached combined list if available
+            if (combinedBirdList.length > 0) {
+                return combinedBirdList;
+            }
+
+            // Start with empty list (will be populated from API)
+            combinedBirdList = [];
+            console.log('Starting with', fallbackBirds.length, 'fallback birds');
+
+            // Try to add API birds
+            if (birdCache.length === 0) {
+                const apiBirds = await fetchBirdsFromAPI();
+                if (apiBirds && apiBirds.length > 0) {
+                    birdCache = apiBirds;
+                }
+            }
+
+            // Add API birds to the list
+            if (birdCache.length > 0) {
+                console.log('Adding', birdCache.length, 'API birds');
+                birdCache.forEach(apiBird => {
+                        combinedBirdList.push(apiBird);
+                });
+            }
+
+            console.log('Total combined birds:', combinedBirdList.length);
+            console.log('Sample combined birds:', combinedBirdList.slice(0, 10).map(b => b.name));
+
+            return combinedBirdList;
+        }
+
+        async function getRandomBird() {
+            const birdList = await getCombinedBirdList();
+            const randomIndex = Math.floor(Math.random() * birdList.length);
+            return birdList[randomIndex];
+        }
+
+        /**
+         * Fetch recordings from xeno-canto API v3 - search for birds with sounds
+         */
+        async function fetchRecordingsFromXenoCanto() {
+            try {
+                const allScientificNames = new Set();
+                
+                // Query xeno-canto API v3 for birds with recordings
+                // Using API v3 which requires query tags and API key
+                const pagesToFetch = 5; // Fetch 5 pages = up to 500 recordings
+                const perPage = 100; // Max per page for API v3
+                
+                // Query for birds (grp:birds) - this gets us a diverse set of bird recordings
+                const query = 'grp:birds';
+                
+                for (let page = 1; page <= pagesToFetch; page++) {
+                    try {
+                        // API v3 format: query parameter with search tags, key parameter required
+                        const apiUrl = `${XENOCANTO_BASE_URL}?query=${encodeURIComponent(query)}&key=${XENOCANTO_API_KEY}&page=${page}&per_page=${perPage}`;
+                        
+                        console.log(`Fetching page ${page} from xeno-canto API v3...`);
+                        
+                        // Try CORS proxy first
+                        let data = await fetchWithProxy(apiUrl);
+                        
+                        // If proxy fails, try direct fetch
+                        if (!data) {
+                            try {
+                                const response = await fetch(apiUrl, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Accept': 'application/json'
+                                    },
+                                    mode: 'cors'
+                                });
+                                
+                                if (response.ok) {
+                                    data = await response.json();
+                                } else {
+                                    const errorText = await response.text();
+                                    console.warn(`xeno-canto API returned status ${response.status}:`, errorText);
+                                }
+                            } catch (directError) {
+                                console.warn(`Direct fetch failed for page ${page}:`, directError);
+                                continue;
+                            }
+                        }
+                        
+                        if (data) {
+                            const numRecordings = parseInt(data.numRecordings) || (data.recordings ? data.recordings.length : 0);
+                            console.log(`Page ${page} returned:`, numRecordings, 'recordings');
+                            
+                            if (data.recordings && data.recordings.length > 0) {
+                                // Extract unique scientific names from recordings
+                                data.recordings.forEach(recording => {
+                                    if (recording.gen && recording.sp) {
+                                        // Combine genus and species
+                                        const sciName = `${recording.gen} ${recording.sp}`.trim();
+                                        if (sciName) {
+                                            allScientificNames.add(sciName);
+                                        }
+                                    }
+                                });
+                                
+                                // Check if we've reached the last page
+                                const numPages = parseInt(data.numPages) || 1;
+                                if (page >= numPages) {
+                                    console.log('Reached last page of results');
+                                    break;
+                                }
+                            } else {
+                                console.warn(`No recordings found on page ${page}`);
+                            }
+                        } else {
+                            console.warn(`No data returned for page ${page}`);
+                        }
+                        
+                        // Small delay to avoid rate limiting
+                        if (page < pagesToFetch) {
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                        }
+                    } catch (pageError) {
+                        console.warn(`Error fetching page ${page}:`, pageError);
+                        continue;
+                    }
+                }
+                
+                console.log(`Fetched ${allScientificNames.size} unique scientific names from xeno-canto`);
+                return Array.from(allScientificNames);
+            } catch (error) {
+                console.error('Error fetching recordings from xeno-canto:', error);
+                return [];
+            }
+        }
+
+        /**
+         * Find birds in our database that match scientific names from xeno-canto
+         */
+        async function findBirdsByScientificNames(scientificNames) {
+            const birdList = await getCombinedBirdList();
+            const matchedBirds = [];
+            
+            scientificNames.forEach(sciName => {
+                // Try to find matching bird by scientific name
+                const bird = birdList.find(b => {
+                    if (b.sciName) {
+                        // Exact match
+                        if (b.sciName.toLowerCase() === sciName.toLowerCase()) {
+                            return true;
+                        }
+                        // Match genus and species separately
+                        const birdParts = b.sciName.toLowerCase().split(' ');
+                        const searchParts = sciName.toLowerCase().split(' ');
+                        if (birdParts.length >= 2 && searchParts.length >= 2) {
+                            return birdParts[0] === searchParts[0] && 
+                                   birdParts[1] === searchParts[1];
+                        }
+                    }
+                    return false;
+                });
+                
+                if (bird && !matchedBirds.find(b => b.name === bird.name)) {
+                    matchedBirds.push(bird);
+                }
+            });
+            
+            return matchedBirds;
+        }
+
+        /**
+         * Build cache of birds with sound recordings by querying xeno-canto first
+         */
+        async function buildBirdsWithSoundCache() {
+            if (birdsWithSoundCache.length > 0) {
+                return; // Cache already built
+            }
+            
+            console.log('Building cache of birds with sound recordings...');
+            
+            // Fetch recordings from xeno-canto using common bird queries
+            const allScientificNames = await fetchRecordingsFromXenoCanto();
+            
+            console.log(`Found ${allScientificNames.length} unique scientific names with recordings`);
+            
+            if (allScientificNames.length === 0) {
+                console.warn('No recordings found from xeno-canto. The API may be unavailable or CORS proxies are not working.');
+                // Fallback: use a curated list of common birds that typically have sounds
+                const fallbackBirds = [
+                    'Turdus migratorius', 'Cardinalis cardinalis', 'Cyanocitta cristata',
+                    'Turdus merula', 'Parus major', 'Passer domesticus',
+                    'Corvus brachyrhynchos', 'Sturnus vulgaris', 'Erithacus rubecula',
+                    'Phylloscopus trochilus', 'Regulus regulus', 'Cyanistes caeruleus'
+                ];
+                allScientificNames.push(...fallbackBirds);
+                console.log(`Using ${fallbackBirds.length} fallback birds with sounds`);
+            }
+            
+            // Find matching birds in our database
+            const matchedBirds = await findBirdsByScientificNames(allScientificNames);
+            
+            birdsWithSoundCache = matchedBirds;
+            console.log(`Matched ${birdsWithSoundCache.length} birds with sound recordings`);
+        }
+
+        /**
+         * Get a random bird that has sound recordings available
+         */
+        async function getRandomBirdWithSound() {
+            // Build cache if needed
+            if (birdsWithSoundCache.length === 0) {
+                await buildBirdsWithSoundCache();
+            }
+            
+            // If we have birds in cache, return a random one
+            if (birdsWithSoundCache.length > 0) {
+                const randomIndex = Math.floor(Math.random() * birdsWithSoundCache.length);
+                return birdsWithSoundCache[randomIndex];
+            }
+            
+            // If no birds with sounds found, return null
+            return null;
+        }
+
+        /**
+         * Search for birds matching the search term
+         */
+        async function findBirdByName(searchTerm) {
+            const searchLower = searchTerm.toLowerCase().trim();
+            console.log('Searching for bird:', searchTerm);
+
+            const birdList = await getCombinedBirdList();
+            console.log('Searching in', birdList.length, 'birds');
+
+            // Try exact match first
+            let found = birdList.find(bird =>
+                bird.name.toLowerCase() === searchLower
+            );
+
+            // If no exact match, try partial match (case-insensitive)
+            if (!found) {
+                found = birdList.find(bird =>
+                    bird.name.toLowerCase().includes(searchLower)
+                );
+            }
+
+            // Try without "American", "Common", etc. prefixes
+            if (!found) {
+                const withoutPrefix = searchLower.replace(/^(american|common|european|western|eastern)\s+/, '');
+                if (withoutPrefix !== searchLower) {
+                    found = birdList.find(bird =>
+                        bird.name.toLowerCase().includes(withoutPrefix)
+                    );
+                }
+            }
+
+            console.log('Found bird:', found ? found.name : 'none');
+            return found || null;
+        }
+
+        /**
+         * Get all birds matching a search term (for autocomplete)
+         */
+        async function findBirdsByName(searchTerm, limit = 10) {
+            const searchLower = searchTerm.toLowerCase().trim();
+
+            if (!searchLower) return [];
+
+            const birdList = await getCombinedBirdList();
+
+            // Find all matching birds
+            const matches = birdList.filter(bird =>
+                bird.name.toLowerCase().includes(searchLower) ||
+                (bird.sciName && bird.sciName.toLowerCase().includes(searchLower))
+            );
+
+            // Sort by relevance (exact > starts with > contains)
+            matches.sort((a, b) => {
+                const aExact = a.name.toLowerCase() === searchLower;
+                const bExact = b.name.toLowerCase() === searchLower;
+                if (aExact && !bExact) return -1;
+                if (!aExact && bExact) return 1;
+
+                const aStarts = a.name.toLowerCase().startsWith(searchLower);
+                const bStarts = b.name.toLowerCase().startsWith(searchLower);
+                if (aStarts && !bStarts) return -1;
+                if (!aStarts && bStarts) return 1;
+
+                return a.name.localeCompare(b.name);
+            });
+
+            return matches.slice(0, limit);
+        }
+
+        async function fetchBirdSound(scientificName) {
+            try {
+                const cleanName = scientificName.trim();
+                const nameParts = cleanName.split(' ');
+                
+                // Try different query formats for API v3
+                const queries = [];
+                
+                if (nameParts.length >= 2) {
+                    const genus = nameParts[0];
+                    const species = nameParts.slice(1).join(' ');
+                    // API v3 format: gen:Genus+sp:Species
+                    queries.push(`gen:${genus}+sp:${species}`);
+                    // Also try just genus
+                    queries.push(`gen:${genus}`);
+                } else {
+                    // If only one word, try as genus
+                    queries.push(`gen:${cleanName}`);
+                }
+
+                for (const query of queries) {
+                    try {
+                        const encodedQuery = encodeURIComponent(query);
+                        // API v3 requires key parameter
+                        const apiUrl = `${XENOCANTO_BASE_URL}?query=${encodedQuery}&key=${XENOCANTO_API_KEY}`;
+                        
+                        // Try CORS proxy first (more reliable than JSONP for xeno-canto)
+                        let data = await fetchWithProxy(apiUrl);
+                        
+                        // If proxy fails, try direct fetch (might work if served from a server)
+                        if (!data) {
+                            try {
+                                const response = await fetch(apiUrl, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Accept': 'application/json'
+                                    },
+                                    mode: 'cors'
+                                });
+                                
+                                if (response.ok) {
+                                    data = await response.json();
+                                }
+                            } catch (directError) {
+                                // Direct fetch also failed, will continue to next query
+                                console.warn('Direct fetch also failed:', directError);
+                            }
+                        }
+                        
+                        if (!data) {
+                            console.warn(`Failed to fetch data for query: ${query}`);
+                            continue;
+                        }
+
+
+                        if (data.recordings && data.recordings.length > 0) {
+                            const goodRecordings = data.recordings.filter(r =>
+                                r.q === 'A' || r.q === 'B' || r.q === 'C'
+                            );
+
+                            const recordingsToUse = goodRecordings.length > 0 ? goodRecordings : data.recordings;
+                            const randomIndex = Math.floor(Math.random() * Math.min(3, recordingsToUse.length));
+                            const recording = recordingsToUse[randomIndex];
+
+                            // xeno-canto API v3 file URLs - construct properly
+                            // The 'file' field in v3 is like '//xeno-canto.org/694038/download'
+                            let soundUrl = recording.file;
+                            if (soundUrl.startsWith('//')) {
+                                soundUrl = `https:${soundUrl}`;
+                            } else if (soundUrl.startsWith('http://') || soundUrl.startsWith('https://')) {
+                                // Already a full URL
+                                soundUrl = soundUrl;
+                            } else if (recording.id) {
+                                // Fallback: construct from recording ID
+                                soundUrl = `https://xeno-canto.org/${recording.id}/download`;
+                            } else {
+                                // Last resort: try to extract ID from file path
+                                const match = soundUrl.match(/\/(\d+)\//);
+                                if (match) {
+                                    soundUrl = `https://xeno-canto.org/${match[1]}/download`;
+                                }
+                            }
+
+                            console.log(`Found sound for ${cleanName}: ${soundUrl}`);
+
+                            // Return comprehensive data from xeno-canto API v3
+                            return {
+                                url: soundUrl,
+                                id: recording.id,
+                                country: recording.cnt || 'Unknown',
+                                location: recording.loc || 'Unknown',
+                                recordist: recording.rec || 'Unknown',
+                                type: recording.type || 'call',
+                                quality: recording.q || 'Unknown',
+                                sex: recording.sex || 'Unknown',
+                                stage: recording.stage || 'Unknown',
+                                method: recording.method || 'Unknown',
+                                length: recording.length || 'Unknown',
+                                date: recording.date || 'Unknown',
+                                time: recording.time || 'Unknown',
+                                latitude: recording.lat || null,
+                                longitude: recording.lon || null,
+                                altitude: recording.alt || null,
+                                license: recording.lic || null,
+                                xenoCantoUrl: recording.url ? (recording.url.startsWith('//') ? `https:${recording.url}` : recording.url) : null,
+                                sonogram: recording.sono ? {
+                                    small: recording.sono.small ? (recording.sono.small.startsWith('//') ? `https:${recording.sono.small}` : recording.sono.small) : null,
+                                    med: recording.sono.med ? (recording.sono.med.startsWith('//') ? `https:${recording.sono.med}` : recording.sono.med) : null,
+                                    large: recording.sono.large ? (recording.sono.large.startsWith('//') ? `https:${recording.sono.large}` : recording.sono.large) : null,
+                                    full: recording.sono.full ? (recording.sono.full.startsWith('//') ? `https:${recording.sono.full}` : recording.sono.full) : null
+                                } : null,
+                                also: recording.also || []
+                            };
+                        }
+                    } catch (err) {
+                        console.warn(`Error fetching sound for query ${query}:`, err);
+                        continue;
+                    }
+                }
+
+                console.warn(`No recordings found for ${cleanName}`);
+                return null;
+            } catch (error) {
+                console.error('xeno-canto API error:', error);
+                return null;
+            }
+        }
+
+        /**
+         * Fetch with CORS proxy as fallback
+         */
+        async function fetchWithProxy(apiUrl) {
+            // Try multiple proxy services
+            const proxyServices = [
+                // Try codetabs proxy (often more reliable)
+                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(apiUrl)}`,
+                // Try corsproxy.io
+                `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`,
+                // Try allorigins with get endpoint
+                `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`
+            ];
+            
+            for (const proxyUrl of proxyServices) {
+                try {
+                    const response = await fetch(proxyUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        },
+                        mode: 'cors'
+                    });
+                    
+                    if (response.ok) {
+                        let data = await response.json();
+                        // Handle different proxy response formats
+                        if (data.contents) {
+                            // allorigins.win format
+                            try {
+                                data = JSON.parse(data.contents);
+                            } catch (parseError) {
+                                // If parsing fails, data might already be an object
+                                console.warn('Could not parse proxy response contents');
+                            }
+                        }
+                        return data;
+                    }
+                } catch (proxyError) {
+                    console.warn(`Proxy failed: ${proxyUrl.substring(0, 50)}...`);
+                    continue;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Fetch bird summary from Wikipedia API
+         */
+        async function fetchWikipediaSummary(birdName) {
+            try {
+                const cleanName = birdName.replace(/ /g, '_');
+                const response = await fetch(`${WIKIPEDIA_API_URL}/${encodeURIComponent(cleanName)}`);
+
+                if (!response.ok) throw new Error('Wikipedia API request failed');
+
+                const data = await response.json();
+                return {
+                    extract: data.extract,
+                    url: data.content_urls?.desktop?.page || `https://en.wikipedia.org/wiki/${cleanName}`
+                };
+            } catch (error) {
+                console.warn('Wikipedia API error:', error);
+                return null;
+            }
+        }
+
+        /* ========================================
+           DISPLAY HELPER FUNCTIONS
+           ======================================== */
+
+        async function renderBirdDisplay(bird, containerId, options = {}) {
+            const container = document.getElementById(containerId);
+            const showWikipedia = options.showWikipedia !== false;
+            const blurred = options.blurred || false;
+
+            // Get image URL - prioritize first image if available
+            let imageUrl = 'https://via.placeholder.com/800x400?text=Bird+Image+Not+Available';
+
+            if (bird.images && Array.isArray(bird.images) && bird.images.length > 0) {
+                // Use first image that looks valid
+                imageUrl = bird.images[0];
+            } else if (bird.image) {
+                // Some API formats use 'image' instead of 'images'
+                imageUrl = bird.image;
+            }
+
+            console.log('Rendering bird:', bird.name, 'with image:', imageUrl);
+
+            let html = `
+                <img src="${imageUrl}"
+                     alt="${bird.name}"
+                     class="bird-image ${blurred ? 'blurred' : ''}"
+                     onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1444464666168-49d633b86797?w=800&h=400&fit=crop'">
+                <div class="bird-name">${bird.name}</div>
+            `;
+
+            if (bird.sciName) {
+                html += `<div class="bird-scientific">${bird.sciName}</div>`;
+            }
+
+            // Add Play Sound button only if not from regular bird search
+            // Regular bird search should not have sound playback (use xeno-canto search instead)
+            const isRegularSearch = containerId === 'search-results-display';
+            if (!isRegularSearch) {
+                html += `<button class="secondary play-sound-btn" 
+                    data-bird-name="${bird.name.replace(/"/g, '&quot;')}" 
+                    data-sci-name="${(bird.sciName || '').replace(/"/g, '&quot;')}" 
+                    data-container-id="${containerId}"
+                    style="margin-top: 15px;">
+                    🎵 Play Sound
+                </button>
+                <div id="${containerId}-sound-player" style="margin-top: 15px;"></div>`;
+            } else {
+                html += `
+                    <div style="margin-top: 15px; padding: 15px; background: #FFF3CD; border-radius: 8px; color: #856404; border-left: 4px solid #FFC107;">
+                        🎵 <strong>Sound Recordings:</strong> Use the "Search Xeno-canto Recordings" section below to find and play sound recordings for this bird.
+                    </div>
+                `;
+            }
+
+            // Fetch and display Wikipedia summary
+            if (showWikipedia) {
+                container.innerHTML = html + '<div class="loading" style="padding: 20px;">Loading summary...</div>';
+                container.classList.add('show');
+
+                const wikiData = await fetchWikipediaSummary(bird.name);
+
+                if (wikiData && wikiData.extract) {
+                    html += `<div class="bird-summary">${wikiData.extract}</div>`;
+                    html += `<a href="${wikiData.url}" target="_blank" class="wikipedia-link">Read more on Wikipedia →</a>`;
+                } else {
+                    html += `<div class="bird-summary">No summary available for this bird species.</div>`;
+                    const wikiUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(bird.name.replace(/ /g, '_'))}`;
+                    html += `<a href="${wikiUrl}" target="_blank" class="wikipedia-link">Search on Wikipedia →</a>`;
+                }
+            }
+
+            container.innerHTML = html;
+            container.classList.add('show');
+        }
+
+        function showLoading(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading bird data...</p>
+                </div>
+            `;
+            container.classList.add('show');
+        }
+
+        function showError(containerId, message) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div class="error-message">⚠️ ${message}</div>
+            `;
+            container.classList.add('show');
+        }
+
+        /* ========================================
+           FEATURE 1: RANDOM BIRD & BIRD OF THE DAY
+           ======================================== */
+        async function showRandomBird() {
+            const containerId = 'random-bird-display';
+            showLoading(containerId);
+
+            try {
+                const bird = await getRandomBird();
+                setTimeout(() => {
+                    renderBirdDisplay(bird, containerId);
+                }, 300);
+            } catch (error) {
+                console.error('Error in showRandomBird:', error);
+                showError(containerId, 'Could not load bird data. Please try again!');
+            }
+        }
+
+        async function showBirdOfTheDay() {
+            const containerId = 'random-bird-display';
+            const today = new Date().toDateString();
+            const cacheKey = 'birdOfTheDay';
+
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                const cachedData = JSON.parse(cached);
+                if (cachedData.date === today) {
+                    renderBirdDisplay(cachedData.bird, containerId);
+                    return;
+                }
+            }
+
+            showLoading(containerId);
+
+            try {
+                const bird = await getRandomBird();
+
+                localStorage.setItem(cacheKey, JSON.stringify({
+                    date: today,
+                    bird: bird
+                }));
+
+                setTimeout(() => {
+                    renderBirdDisplay(bird, containerId);
+                }, 300);
+            } catch (error) {
+                showError(containerId, 'Could not load bird of the day. Please try again!');
+            }
+        }
+
+        /* ========================================
+           FEATURE 2: PLAY SOUND FOR DISPLAYED BIRD
+           ======================================== */
+        async function playSoundForBird(birdName, scientificName, containerId) {
+            const soundPlayerDiv = document.getElementById(`${containerId}-sound-player`);
+            if (!soundPlayerDiv) return;
+
+            // Show loading state
+            soundPlayerDiv.innerHTML = '<div class="loading" style="padding: 10px;"><div class="spinner" style="width: 30px; height: 30px; border-width: 3px;"></div><p style="font-size: 0.9rem;">Loading sound...</p></div>';
+
+            try {
+                const searchName = scientificName || birdName;
+                const soundData = await fetchBirdSound(searchName);
+
+                if (soundData && soundData.url) {
+                    let audioInfoHtml = `
+                        <div class="audio-info" style="margin-top: 15px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                                <div>
+                                    <strong>🎵 Sound Type:</strong> ${soundData.type || 'Unknown'}<br>
+                                    <strong>📍 Location:</strong> ${soundData.location || 'Unknown'}<br>
+                                    <strong>🌍 Country:</strong> ${soundData.country || 'Unknown'}<br>
+                                    ${soundData.latitude && soundData.longitude ? `<strong>🗺️ Coordinates:</strong> ${soundData.latitude}, ${soundData.longitude}<br>` : ''}
+                                    ${soundData.altitude ? `<strong>⛰️ Altitude:</strong> ${soundData.altitude}m<br>` : ''}
+                                </div>
+                                <div>
+                                    <strong>👤 Recordist:</strong> ${soundData.recordist || 'Unknown'}<br>
+                                    <strong>⭐ Quality:</strong> ${soundData.quality || 'Unknown'}<br>
+                                    <strong>🔬 Method:</strong> ${soundData.method || 'Unknown'}<br>
+                                    ${soundData.sex !== 'Unknown' ? `<strong>⚥ Sex:</strong> ${soundData.sex}<br>` : ''}
+                                    ${soundData.stage !== 'Unknown' ? `<strong>🐣 Stage:</strong> ${soundData.stage}<br>` : ''}
+                                </div>
+                            </div>
+                            ${soundData.date ? `<div><strong>📅 Date:</strong> ${soundData.date}${soundData.time ? ` at ${soundData.time}` : ''}</div>` : ''}
+                            ${soundData.length ? `<div><strong>⏱️ Length:</strong> ${soundData.length}</div>` : ''}
+                            ${soundData.also && soundData.also.length > 0 ? `<div style="margin-top: 8px;"><strong>🐦 Also in recording:</strong> ${soundData.also.join(', ')}</div>` : ''}
+                            ${soundData.license ? `<div style="margin-top: 8px; font-size: 0.85rem; color: #666;"><strong>📜 License:</strong> <a href="${soundData.license.startsWith('//') ? 'https:' + soundData.license : soundData.license}" target="_blank" style="color: #17A2B8;">View License</a></div>` : ''}
+                            ${soundData.xenoCantoUrl ? `<div style="margin-top: 8px;"><a href="${soundData.xenoCantoUrl}" target="_blank" style="color: #17A2B8; text-decoration: none; font-weight: 600;">🔗 View on Xeno-canto →</a></div>` : ''}
+                        </div>
+                    `;
+                    
+                    // Add sonogram if available
+                    if (soundData.sonogram && soundData.sonogram.med) {
+                        audioInfoHtml = `
+                            <div style="margin: 15px 0;">
+                                <strong>📊 Sonogram:</strong>
+                                <img src="${soundData.sonogram.med}" alt="Sonogram" style="width: 100%; max-width: 600px; border-radius: 8px; margin-top: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            </div>
+                        ` + audioInfoHtml;
+                    }
+                    
+                    soundPlayerDiv.innerHTML = `
+                        <audio controls controlsList="nodownload" style="width: 100%; margin: 10px 0;">
+                            <source src="${soundData.url}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                        ${audioInfoHtml}
+                    `;
+
+                    // Try to auto-play
+                    setTimeout(() => {
+                        const audio = soundPlayerDiv.querySelector('audio');
+                        if (audio) {
+                            audio.play().catch(e => console.log('Auto-play prevented:', e));
+                        }
+                    }, 100);
+                } else {
+                    soundPlayerDiv.innerHTML = `
+                        <div style="padding: 15px; background: #FFF3CD; border-radius: 8px; color: #856404; border-left: 4px solid #FFC107; margin-top: 10px;">
+                            🔇 No sound recording available for this bird species.
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error in playSoundForBird:', error);
+                const isLocalFile = window.location.protocol === 'file:';
+                soundPlayerDiv.innerHTML = `
+                    <div style="padding: 15px; background: #FFE5E5; border-radius: 8px; color: #D32F2F; border-left: 4px solid #D32F2F; margin-top: 10px;">
+                        ⚠️ Could not load bird sound due to CORS restrictions.
+                        ${isLocalFile ? '<br><br><strong>Solution:</strong> Run a local web server:<br>• Python: <code>python -m http.server 8000</code><br>• Node.js: <code>npx http-server</code><br>Then open <code>http://localhost:8000</code>' : '<br>Please try again or check your internet connection.'}
+                    </div>
+                `;
+            }
+        }
+
+        /* ========================================
+           FEATURE 3: XENO-CANTO RECORDING SEARCH
+           ======================================== */
+        async function searchXenoCantoRecordings() {
+            const containerId = 'xc-results-display';
+            const container = document.getElementById(containerId);
+            
+            // Clear previous results
+            document.getElementById('search-results-display').innerHTML = '';
+            container.innerHTML = '';
+            container.classList.remove('show');
+            
+            showLoading(containerId);
+            
+            try {
+                // Build query from filter inputs
+                const queryParts = [];
+                
+                // Sound type
+                const typeInput = document.getElementById('xc-type-input').value;
+                if (typeInput) {
+                    queryParts.push(`type:${typeInput}`);
+                }
+                
+                // Quality
+                const qualityInput = document.getElementById('xc-quality-input').value;
+                if (qualityInput) {
+                    queryParts.push(`q:${qualityInput}`);
+                }
+                
+                // Sex
+                const sexInput = document.getElementById('xc-sex-input').value;
+                if (sexInput) {
+                    queryParts.push(`sex:${sexInput}`);
+                }
+                
+                // Year
+                const yearInput = document.getElementById('xc-year-input').value;
+                if (yearInput) {
+                    queryParts.push(`year:${yearInput}`);
+                }
+                
+                // Always add grp:birds to ensure we only get birds
+                queryParts.push('grp:birds');
+                
+                // Join query parts - blank fields are automatically excluded
+                // xeno-canto API uses + to join query parts
+                // Important: gen:Genus+sp:Species uses + internally, so when combining with other parts,
+                // we need to be careful about the + characters
+                const query = queryParts.join('+');
+                console.log('Searching xeno-canto with query:', query);
+                console.log('Query parts:', queryParts);
+                console.log('Query parts used:', queryParts.length - 1, 'filters (blank fields ignored)');
+                
+                // Fetch from xeno-canto API v3 - fetch all results first for pagination
+                // encodeURIComponent will properly encode the entire query string
+                // Note: encodeURIComponent will encode quotes as %22, + as %2B, spaces as %20
+                const apiUrl = `${XENOCANTO_BASE_URL}?query=${encodeURIComponent(query)}&key=${XENOCANTO_API_KEY}&per_page=500`;
+                console.log('Full API URL:', apiUrl);
+                console.log('Decoded query check:', decodeURIComponent(encodeURIComponent(query)));
+                console.log('Raw query before encoding:', query);
+                
+                let data = await fetchWithProxy(apiUrl);
+                
+                // Check if proxy returned an error
+                if (data && data.error) {
+                    console.error('xeno-canto API error from proxy:', data.error);
+                    const errorMsg = data.error.message || data.error.code || 'Invalid query';
+                    showError(containerId, `API Error: ${errorMsg}. Please check your search parameters (species and country names).`);
+                    return;
+                }
+                
+                if (!data) {
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json'
+                            },
+                            mode: 'cors'
+                        });
+                        
+                        if (response.ok) {
+                            data = await response.json();
+                        } else {
+                            // Check for API errors
+                            try {
+                                const errorData = await response.json();
+                                console.error('xeno-canto API error response:', errorData);
+                                if (errorData && errorData.error) {
+                                    const errorMsg = errorData.error.message || errorData.error.code || 'Invalid query';
+                                    console.error('xeno-canto API error:', errorData.error);
+                                    showError(containerId, `API Error: ${errorMsg}. Please check your search parameters. Query format: ${query}`);
+                                    return;
+                                }
+                            } catch (parseError) {
+                                console.error('Could not parse error response:', parseError);
+                                showError(containerId, `API returned status ${response.status}. Please check your search parameters.`);
+                                return;
+                            }
+                        }
+                    } catch (directError) {
+                        console.warn('Direct fetch failed:', directError);
+                    }
+                }
+                
+                if (!data) {
+                    showError(containerId, 'Could not fetch recordings. Please check your connection and try again.');
+                    return;
+                }
+                
+                // Check for API errors in response
+                if (data.error) {
+                    console.error('xeno-canto API error:', data.error);
+                    const errorMsg = data.error.message || data.error.code || 'Invalid query';
+                    showError(containerId, `API Error: ${errorMsg}. Please check your search parameters. Make sure country and species names are correct.`);
+                    return;
+                }
+                
+                // Log response for debugging
+                console.log('xeno-canto API response:', data);
+                
+                const numRecordings = parseInt(data.numRecordings) || 0;
+                const allRecordings = data.recordings || [];
+                
+                if (allRecordings.length === 0) {
+                    container.innerHTML = `
+                        <div class="placeholder">
+                            <h3>🔍 No recordings found</h3>
+                            <p>No recordings match your search criteria. Try adjusting your filters.</p>
+                            <p style="margin-top: 10px; font-size: 0.9rem; color: #666;">
+                                Query used: <code>${query}</code>
+                            </p>
+                        </div>
+                    `;
+                container.classList.add('show');
+                    return;
+                }
+                
+                // Store results for pagination
+                xcSearchResults = {
+                    allRecordings: allRecordings,
+                    numRecordings: numRecordings,
+                    numSpecies: data.numSpecies || 0,
+                    query: query
+                };
+                xcCurrentPage = 1;
+                
+                // Display paginated results (10 per page)
+                displayXenoCantoResults(containerId);
+
+            } catch (error) {
+                console.error('Error in searchXenoCantoRecordings:', error);
+                showError(containerId, 'An error occurred while searching recordings. Please try again.');
+            }
+        }
+
+        /**
+         * Display paginated xeno-canto search results
+         */
+        function displayXenoCantoResults(containerId) {
+            if (!xcSearchResults) return;
+            
+            const container = document.getElementById(containerId);
+            const { allRecordings, numRecordings, numSpecies } = xcSearchResults;
+            
+            // Calculate pagination
+            const totalPages = Math.ceil(allRecordings.length / xcResultsPerPage);
+            const startIndex = (xcCurrentPage - 1) * xcResultsPerPage;
+            const endIndex = Math.min(startIndex + xcResultsPerPage, allRecordings.length);
+            const recordings = allRecordings.slice(startIndex, endIndex);
+            
+            // Display results header
+            let html = `
+                <div style="margin-bottom: 20px; padding: 15px; background: #E0F2F1; border-radius: 8px;">
+                    <strong>Found ${numRecordings} recording${numRecordings !== 1 ? 's' : ''}</strong>
+                    ${numSpecies ? ` from ${numSpecies} species` : ''}
+                    ${totalPages > 1 ? ` • Page ${xcCurrentPage} of ${totalPages}` : ''}
+                </div>
+            `;
+            
+            // Display recordings for current page
+            recordings.forEach((recording, index) => {
+                const soundUrl = recording.file.startsWith('//') 
+                    ? `https:${recording.file}` 
+                    : recording.file;
+                
+                const xcUrl = recording.url.startsWith('//')
+                    ? `https:${recording.url}`
+                    : recording.url;
+                
+                const sonogramUrl = recording.sono && recording.sono.med
+                    ? (recording.sono.med.startsWith('//') ? `https:${recording.sono.med}` : recording.sono.med)
+                    : null;
+                
+                html += `
+                    <div style="margin-bottom: 25px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                            <div>
+                                <h3 style="color: #2D5016; margin-bottom: 5px;">${recording.en || `${recording.gen} ${recording.sp}`}</h3>
+                                <div style="color: #4A7C59; font-style: italic; margin-bottom: 10px;">${recording.gen} ${recording.sp}${recording.ssp ? ` ${recording.ssp}` : ''}</div>
+                            </div>
+                            <div style="text-align: right; font-size: 0.9rem; color: #666;">
+                                <div><strong>Quality:</strong> ${recording.q || 'N/A'}</div>
+                                <div><strong>ID:</strong> ${recording.id}</div>
+                            </div>
+                        </div>
+                        
+                        ${sonogramUrl ? `
+                            <div style="margin-bottom: 15px;">
+                                <img src="${sonogramUrl}" alt="Sonogram" style="width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            </div>
+                        ` : ''}
+                        
+                        <audio controls controlsList="nodownload" style="width: 100%; margin: 15px 0;">
+                            <source src="${soundUrl}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; padding: 15px; background: #F0F8F5; border-radius: 8px;">
+                            <div>
+                                <strong>📍 Location:</strong> ${recording.loc || 'Unknown'}<br>
+                                <strong>🌍 Country:</strong> ${recording.cnt || 'Unknown'}<br>
+                                ${recording.lat && recording.lon ? `<strong>🗺️ Coordinates:</strong> ${recording.lat}, ${recording.lon}<br>` : ''}
+                                ${recording.alt ? `<strong>⛰️ Altitude:</strong> ${recording.alt}m<br>` : ''}
+                            </div>
+                            <div>
+                                <strong>👤 Recordist:</strong> ${recording.rec || 'Unknown'}<br>
+                                <strong>🎵 Type:</strong> ${recording.type || 'Unknown'}<br>
+                                ${recording.sex ? `<strong>⚥ Sex:</strong> ${recording.sex}<br>` : ''}
+                                ${recording.stage ? `<strong>🐣 Stage:</strong> ${recording.stage}<br>` : ''}
+                                ${recording.length ? `<strong>⏱️ Length:</strong> ${recording.length}<br>` : ''}
+                                ${recording.date ? `<strong>📅 Date:</strong> ${recording.date}${recording.time ? ` at ${recording.time}` : ''}<br>` : ''}
+                            </div>
+                        </div>
+                        
+                        ${recording.rmk ? `
+                            <div style="margin-top: 15px; padding: 12px; background: #FFF9E6; border-left: 4px solid #FFC107; border-radius: 4px; font-size: 0.9rem; color: #666;">
+                                <strong>📝 Remarks:</strong> ${recording.rmk}
+                            </div>
+                        ` : ''}
+                        
+                        ${recording.also && recording.also.length > 0 ? `
+                            <div style="margin-top: 10px; font-size: 0.9rem; color: #666;">
+                                <strong>🐦 Also in recording:</strong> ${recording.also.join(', ')}
+                            </div>
+                        ` : ''}
+                        
+                        <div style="margin-top: 15px;">
+                            <a href="${xcUrl}" target="_blank" style="color: #17A2B8; text-decoration: none; font-weight: 600; margin-right: 15px;">🔗 View on Xeno-canto →</a>
+                            ${recording.lic ? `<a href="${recording.lic.startsWith('//') ? 'https:' + recording.lic : recording.lic}" target="_blank" style="color: #17A2B8; text-decoration: none; font-weight: 600;">📜 License →</a>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Add pagination controls if more than 10 results
+            if (totalPages > 1) {
+                html += `
+                    <div style="margin-top: 30px; padding: 20px; background: #F0F8F5; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div style="color: #2D5016; font-weight: 600;">
+                            Showing ${startIndex + 1}-${endIndex} of ${numRecordings} recordings
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button 
+                                onclick="changeXenoCantoPage(${xcCurrentPage - 1})" 
+                                ${xcCurrentPage === 1 ? 'disabled' : ''}
+                                style="padding: 10px 20px; background: ${xcCurrentPage === 1 ? '#ccc' : 'linear-gradient(135deg, #20B2AA, #17A2B8)'}; color: white; border: none; border-radius: 6px; cursor: ${xcCurrentPage === 1 ? 'not-allowed' : 'pointer'}; font-weight: 600;"
+                            >
+                                ← Previous
+                            </button>
+                            <span style="color: #2D5016; font-weight: 600;">
+                                Page ${xcCurrentPage} of ${totalPages}
+                            </span>
+                            <button 
+                                onclick="changeXenoCantoPage(${xcCurrentPage + 1})" 
+                                ${xcCurrentPage === totalPages ? 'disabled' : ''}
+                                style="padding: 10px 20px; background: ${xcCurrentPage === totalPages ? '#ccc' : 'linear-gradient(135deg, #20B2AA, #17A2B8)'}; color: white; border: none; border-radius: 6px; cursor: ${xcCurrentPage === totalPages ? 'not-allowed' : 'pointer'}; font-weight: 600;"
+                            >
+                                Next →
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+            container.classList.add('show');
+        }
+
+        /**
+         * Change page for xeno-canto search results
+         */
+        function changeXenoCantoPage(page) {
+            if (!xcSearchResults) return;
+            
+            const totalPages = Math.ceil(xcSearchResults.allRecordings.length / xcResultsPerPage);
+            if (page < 1 || page > totalPages) return;
+            
+            xcCurrentPage = page;
+            displayXenoCantoResults('xc-results-display');
+            
+            // Scroll to top of results
+            document.getElementById('xc-results-display').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        /* ========================================
+           FEATURE 3: QUICK BIRD LOOKUP WITH AUTOCOMPLETE
+           ======================================== */
+
+        let currentSuggestionIndex = -1;
+        let currentSuggestions = [];
+        
+        // Autocomplete state for xeno-canto search
+        let xcSpeciesSuggestionIndex = -1;
+        let xcSpeciesSuggestions = [];
+        let xcCountrySuggestionIndex = -1;
+        let xcCountrySuggestions = [];
+        
+        // Common countries with bird recordings (from xeno-canto)
+        const commonCountries = [
+            'USA', 'United States', 'Canada', 'Mexico', 'Brazil', 'Argentina', 'Chile', 'Colombia',
+            'Spain', 'France', 'United Kingdom', 'UK', 'Germany', 'Italy', 'Netherlands', 'Portugal',
+            'Sweden', 'Norway', 'Finland', 'Poland', 'Greece', 'Turkey', 'Russia',
+            'India', 'China', 'Japan', 'Australia', 'New Zealand', 'South Africa', 'Kenya',
+            'Ecuador', 'Peru', 'Costa Rica', 'Panama', 'Guatemala', 'Belize',
+            'Indonesia', 'Malaysia', 'Thailand', 'Philippines', 'Vietnam',
+            'Israel', 'Jordan', 'Egypt', 'Morocco', 'Tunisia',
+            'Madagascar', 'Tanzania', 'Uganda', 'Ghana', 'Nigeria'
+        ];
+
+        /**
+         * Handle search input changes for autocomplete
+         */
+        async function handleSearchInput() {
+            const searchInput = document.getElementById('bird-search-input');
+            const suggestionsDiv = document.getElementById('autocomplete-suggestions');
+            const searchTerm = searchInput.value.trim();
+
+            if (searchTerm.length < 2) {
+                suggestionsDiv.classList.remove('show');
+                currentSuggestions = [];
+                return;
+            }
+
+            const matches = await findBirdsByName(searchTerm, 8);
+            currentSuggestions = matches;
+
+            if (matches.length > 0) {
+                suggestionsDiv.innerHTML = matches.map((bird, index) => `
+                    <div class="autocomplete-item" onclick="selectSuggestion('${bird.name.replace(/'/g, "\\'")}')">
+                        <div class="bird-common-name">${bird.name}</div>
+                        ${bird.sciName ? `<div class="bird-sci-name">${bird.sciName}</div>` : ''}
+                    </div>
+                `).join('');
+                suggestionsDiv.classList.add('show');
+                currentSuggestionIndex = -1;
+            } else {
+                suggestionsDiv.classList.remove('show');
+            }
+        }
+
+        /**
+         * Handle keyboard navigation in autocomplete
+         */
+        function handleSearchKeydown(event) {
+            const suggestionsDiv = document.getElementById('autocomplete-suggestions');
+            const suggestions = suggestionsDiv.querySelectorAll('.autocomplete-item');
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                currentSuggestionIndex = Math.min(currentSuggestionIndex + 1, suggestions.length - 1);
+                updateSuggestionHighlight(suggestions);
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                currentSuggestionIndex = Math.max(currentSuggestionIndex - 1, -1);
+                updateSuggestionHighlight(suggestions);
+            } else if (event.key === 'Enter') {
+                event.preventDefault();
+                if (currentSuggestionIndex >= 0 && currentSuggestions[currentSuggestionIndex]) {
+                    selectSuggestion(currentSuggestions[currentSuggestionIndex].name);
+                } else {
+                    searchBird();
+                }
+            } else if (event.key === 'Escape') {
+                hideAutocomplete();
+            }
+        }
+
+        /**
+         * Update visual highlight of suggestions
+         */
+        function updateSuggestionHighlight(suggestions) {
+            suggestions.forEach((item, index) => {
+                if (index === currentSuggestionIndex) {
+                    item.classList.add('active');
+                    item.scrollIntoView({ block: 'nearest' });
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        /**
+         * Select a suggestion from autocomplete
+         */
+        function selectSuggestion(birdName) {
+            const searchInput = document.getElementById('bird-search-input');
+            searchInput.value = birdName;
+            hideAutocomplete();
+            searchBird();
+        }
+
+        /**
+         * Hide autocomplete suggestions
+         */
+        function hideAutocomplete() {
+            const suggestionsDiv = document.getElementById('autocomplete-suggestions');
+            suggestionsDiv.classList.remove('show');
+            currentSuggestionIndex = -1;
+        }
+
+        /**
+         * Handle autocomplete for species/genus input
+         */
+        async function handleSpeciesAutocomplete() {
+            const input = document.getElementById('xc-species-input');
+            const suggestionsDiv = document.getElementById('xc-species-suggestions');
+            const searchTerm = input.value.trim().toLowerCase();
+
+            if (searchTerm.length < 2) {
+                suggestionsDiv.classList.remove('show');
+                xcSpeciesSuggestions = [];
+                return;
+            }
+
+            // Search bird database for scientific names
+            const birdList = await getCombinedBirdList();
+            const matches = birdList
+                .filter(bird => {
+                    if (!bird.sciName) return false;
+                    const sciName = bird.sciName.toLowerCase();
+                    return sciName.includes(searchTerm) || 
+                           sciName.split(' ')[0].includes(searchTerm); // Match genus
+                })
+                .slice(0, 8)
+                .map(bird => ({
+                    display: `${bird.sciName} (${bird.name})`,
+                    value: bird.sciName
+                }));
+
+            xcSpeciesSuggestions = matches;
+
+            if (matches.length > 0) {
+                suggestionsDiv.innerHTML = matches.map((match, index) => `
+                    <div class="autocomplete-item" onclick="selectSpeciesSuggestion('${match.value.replace(/'/g, "\\'")}')">
+                        <div class="bird-common-name">${match.value}</div>
+                        <div class="bird-sci-name">${match.display.split('(')[1]?.replace(')', '') || ''}</div>
+                    </div>
+                `).join('');
+                suggestionsDiv.classList.add('show');
+                xcSpeciesSuggestionIndex = -1;
+            } else {
+                suggestionsDiv.classList.remove('show');
+            }
+        }
+
+        /**
+         * Handle keyboard navigation for species autocomplete
+         */
+        function handleSpeciesKeydown(event) {
+            const suggestionsDiv = document.getElementById('xc-species-suggestions');
+            const suggestions = suggestionsDiv.querySelectorAll('.autocomplete-item');
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                xcSpeciesSuggestionIndex = Math.min(xcSpeciesSuggestionIndex + 1, suggestions.length - 1);
+                updateXcSpeciesHighlight(suggestions);
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                xcSpeciesSuggestionIndex = Math.max(xcSpeciesSuggestionIndex - 1, -1);
+                updateXcSpeciesHighlight(suggestions);
+            } else if (event.key === 'Enter') {
+                event.preventDefault();
+                if (xcSpeciesSuggestionIndex >= 0 && xcSpeciesSuggestions[xcSpeciesSuggestionIndex]) {
+                    selectSpeciesSuggestion(xcSpeciesSuggestions[xcSpeciesSuggestionIndex].value);
+                }
+            } else if (event.key === 'Escape') {
+                hideSpeciesAutocomplete();
+            }
+        }
+
+        /**
+         * Update highlight for species suggestions
+         */
+        function updateXcSpeciesHighlight(suggestions) {
+            suggestions.forEach((item, index) => {
+                if (index === xcSpeciesSuggestionIndex) {
+                    item.classList.add('active');
+                    item.scrollIntoView({ block: 'nearest' });
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        /**
+         * Select a species suggestion
+         */
+        function selectSpeciesSuggestion(speciesName) {
+            const input = document.getElementById('xc-species-input');
+            input.value = speciesName;
+            hideSpeciesAutocomplete();
+        }
+
+        /**
+         * Hide species autocomplete
+         */
+        function hideSpeciesAutocomplete() {
+            const suggestionsDiv = document.getElementById('xc-species-suggestions');
+            suggestionsDiv.classList.remove('show');
+            xcSpeciesSuggestionIndex = -1;
+        }
+
+        /**
+         * Handle autocomplete for country input
+         */
+        function handleCountryAutocomplete() {
+            const input = document.getElementById('xc-country-input');
+            const suggestionsDiv = document.getElementById('xc-country-suggestions');
+            const searchTerm = input.value.trim().toLowerCase();
+
+            if (searchTerm.length < 1) {
+                suggestionsDiv.classList.remove('show');
+                xcCountrySuggestions = [];
+                return;
+            }
+
+            // Filter countries that match
+            const matches = commonCountries
+                .filter(country => country.toLowerCase().includes(searchTerm))
+                .slice(0, 8)
+                .map(country => ({ display: country, value: country }));
+
+            xcCountrySuggestions = matches;
+
+            if (matches.length > 0) {
+                suggestionsDiv.innerHTML = matches.map((match, index) => `
+                    <div class="autocomplete-item" onclick="selectCountrySuggestion('${match.value.replace(/'/g, "\\'")}')">
+                        <div class="bird-common-name">${match.value}</div>
+                    </div>
+                `).join('');
+                suggestionsDiv.classList.add('show');
+                xcCountrySuggestionIndex = -1;
+            } else {
+                suggestionsDiv.classList.remove('show');
+            }
+        }
+
+        /**
+         * Handle keyboard navigation for country autocomplete
+         */
+        function handleCountryKeydown(event) {
+            const suggestionsDiv = document.getElementById('xc-country-suggestions');
+            const suggestions = suggestionsDiv.querySelectorAll('.autocomplete-item');
+
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                xcCountrySuggestionIndex = Math.min(xcCountrySuggestionIndex + 1, suggestions.length - 1);
+                updateXcCountryHighlight(suggestions);
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                xcCountrySuggestionIndex = Math.max(xcCountrySuggestionIndex - 1, -1);
+                updateXcCountryHighlight(suggestions);
+            } else if (event.key === 'Enter') {
+                event.preventDefault();
+                if (xcCountrySuggestionIndex >= 0 && xcCountrySuggestions[xcCountrySuggestionIndex]) {
+                    selectCountrySuggestion(xcCountrySuggestions[xcCountrySuggestionIndex].value);
+                }
+            } else if (event.key === 'Escape') {
+                hideCountryAutocomplete();
+            }
+        }
+
+        /**
+         * Update highlight for country suggestions
+         */
+        function updateXcCountryHighlight(suggestions) {
+            suggestions.forEach((item, index) => {
+                if (index === xcCountrySuggestionIndex) {
+                    item.classList.add('active');
+                    item.scrollIntoView({ block: 'nearest' });
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        /**
+         * Select a country suggestion
+         */
+        function selectCountrySuggestion(countryName) {
+            const input = document.getElementById('xc-country-input');
+            input.value = countryName;
+            hideCountryAutocomplete();
+        }
+
+        /**
+         * Hide country autocomplete
+         */
+        function hideCountryAutocomplete() {
+            const suggestionsDiv = document.getElementById('xc-country-suggestions');
+            suggestionsDiv.classList.remove('show');
+            xcCountrySuggestionIndex = -1;
+        }
+
+        /**
+         * Search for a bird and display results
+         */
+        async function searchBird() {
+            const searchInput = document.getElementById('bird-search-input');
+            const searchTerm = searchInput.value.trim();
+            const containerId = 'search-results-display';
+
+            hideAutocomplete();
+
+            if (!searchTerm) {
+                showError(containerId, 'Please enter a bird name to search.');
+                return;
+            }
+
+            showLoading(containerId);
+
+            try {
+                const bird = await findBirdByName(searchTerm);
+
+                if (bird) {
+                    console.log('Found bird:', bird);
+                    setTimeout(() => {
+                        renderBirdDisplay(bird, containerId, { showWikipedia: true });
+                    }, 300);
+                } else {
+                    setTimeout(() => {
+                        const container = document.getElementById(containerId);
+                        container.innerHTML = `
+                            <div class="placeholder">
+                                <h3>🔍 No results found</h3>
+                                <p>Sorry, we couldn't find "${searchTerm}"</p>
+                                <p style="margin-top: 10px; font-size: 0.9rem; color: #666;">
+                                    Try: American Robin, Bald Eagle, Blue Jay, Cardinal, Hummingbird
+                                </p>
+                            </div>
+                        `;
+                        container.classList.add('show');
+                    }, 300);
+                }
+
+            } catch (error) {
+                console.error('Search error:', error);
+                showError(containerId, 'Search failed. Please try again!');
+            }
+        }
+
+        /* ========================================
+           GAME 1: GUESS THE BIRD (with blur toggle)
+           ======================================== */
+        async function startGuessGame() {
+            document.getElementById('game-menu').style.display = 'none';
+            const containerId = 'game-display';
+            showLoading(containerId);
+
+            gameRevealed = false;
+            currentGameType = Math.random() > 0.5 ? 'image' : 'sound';
+
+            try {
+                currentGameBird = await getRandomBird();
+                const container = document.getElementById(containerId);
+
+                if (currentGameType === 'image') {
+                    const imageUrl = currentGameBird.images && currentGameBird.images[0]
+                        ? currentGameBird.images[0]
+                        : 'https://via.placeholder.com/800x400?text=Bird+Image';
+
+                    container.innerHTML = `
+                        <div class="challenge-type">🖼️ Image Challenge</div>
+                        <p style="margin-bottom: 15px; color: #666;">Can you guess which bird this is?</p>
+                        <img src="${imageUrl}"
+                             id="game-bird-image"
+                             alt="Mystery Bird"
+                             class="bird-image blurred"
+                             onerror="this.src='https://via.placeholder.com/800x400?text=Bird+Image+Not+Available'">
+
+                        <div class="toggle-container">
+                            <span>Blurred</span>
+                            <div class="toggle-switch" id="blur-toggle" onclick="toggleBlur()">
+                                <div class="toggle-slider"></div>
+                            </div>
+                            <span>Clear</span>
+                        </div>
+
+                        <div class="button-group">
+                            <button onclick="revealGuessAnswer()">👁️ Reveal Answer</button>
+                            <button onclick="startGuessGame()">⏭️ Next</button>
+                            <button class="tertiary" onclick="backToGameMenu()">🏠 Menu</button>
+                        </div>
+                        <div id="game-answer"></div>
+                    `;
+                } else {
+                    // Sound challenge - try to get sound, fallback to image if not available
+                    let soundData = await fetchBirdSound(currentGameBird.sciName || currentGameBird.name);
+
+                    // If no sound found, try a few more birds
+                    let attempts = 0;
+                    while ((!soundData || !soundData.url) && attempts < 3) {
+                        currentGameBird = await getRandomBird();
+                        soundData = await fetchBirdSound(currentGameBird.sciName || currentGameBird.name);
+                        attempts++;
+                    }
+
+                    if (soundData && soundData.url) {
+                        container.innerHTML = `
+                            <div class="challenge-type">🎵 Sound Challenge</div>
+                            <p style="margin-bottom: 15px; color: #666;">Listen carefully. Can you identify this bird?</p>
+                            <audio controls style="width: 100%; margin: 20px 0;">
+                                <source src="${soundData.url}" type="audio/mpeg">
+                            </audio>
+                            <div class="button-group">
+                                <button onclick="revealGuessAnswer()">👁️ Reveal Answer</button>
+                                <button onclick="startGuessGame()">⏭️ Next</button>
+                                <button class="tertiary" onclick="backToGameMenu()">🏠 Menu</button>
+                            </div>
+                            <div id="game-answer"></div>
+                        `;
+
+                        setTimeout(() => {
+                            const audio = container.querySelector('audio');
+                            if (audio) audio.play().catch(e => console.log('Auto-play prevented:', e));
+                        }, 100);
+                    } else {
+                        // Fallback to image challenge if no sound available
+                        currentGameType = 'image';
+                        startGuessGame();
+                        return;
+                    }
+                }
+
+                container.classList.add('show');
+
+            } catch (error) {
+                console.error('Error in startGuessGame:', error);
+                showError(containerId, 'Could not load challenge. Please try again!');
+            }
+        }
+
+        function toggleBlur() {
+            const toggle = document.getElementById('blur-toggle');
+            const image = document.getElementById('game-bird-image');
+
+            toggle.classList.toggle('active');
+
+            if (toggle.classList.contains('active')) {
+                image.classList.remove('blurred');
+                image.classList.add('unblurred');
+            } else {
+                image.classList.remove('unblurred');
+                image.classList.add('blurred');
+            }
+        }
+
+        function revealGuessAnswer() {
+            if (gameRevealed || !currentGameBird) return;
+
+            gameRevealed = true;
+            const answerDiv = document.getElementById('game-answer');
+
+            if (currentGameType === 'image') {
+                const gameImage = document.getElementById('game-bird-image');
+                if (gameImage) {
+                    gameImage.classList.remove('blurred');
+                    gameImage.classList.add('unblurred');
+                }
+                const toggle = document.getElementById('blur-toggle');
+                if (toggle) toggle.classList.add('active');
+
+                answerDiv.innerHTML = `
+                    <div style="animation: fadeInUp 0.5s ease-out; margin-top: 20px;">
+                        <div class="bird-name">✅ ${currentGameBird.name}</div>
+                        <div class="bird-scientific">${currentGameBird.sciName || ''}</div>
+                    </div>
+                `;
+            } else {
+                const imageUrl = currentGameBird.images && currentGameBird.images[0]
+                    ? currentGameBird.images[0]
+                    : 'https://via.placeholder.com/800x400?text=Bird+Image';
+
+                answerDiv.innerHTML = `
+                    <div style="animation: fadeInUp 0.5s ease-out; margin-top: 20px;">
+                        <img src="${imageUrl}" alt="${currentGameBird.name}" class="bird-image">
+                        <div class="bird-name">✅ ${currentGameBird.name}</div>
+                        <div class="bird-scientific">${currentGameBird.sciName || ''}</div>
+                    </div>
+                `;
+            }
+        }
+
+        /* ========================================
+           GAME 3: MEMORY MATCH
+           ======================================== */
+        async function startMemoryGame() {
+            document.getElementById('game-menu').style.display = 'none';
+            const containerId = 'game-display';
+            showLoading(containerId);
+
+            matchedPairs = 0;
+            flippedCards = [];
+
+            try {
+                // Get 6 random birds for 12 cards (6 pairs)
+                const birds = [];
+                for (let i = 0; i < 6; i++) {
+                    birds.push(await getRandomBird());
+                }
+
+                // Create pairs and shuffle
+                memoryCards = [...birds, ...birds].sort(() => Math.random() - 0.5);
+
+                const container = document.getElementById(containerId);
+                container.innerHTML = `
+                    <div class="challenge-type">🧠 Memory Match</div>
+                    <p style="margin-bottom: 15px; color: #666;">Find all the matching pairs!</p>
+
+                    <div class="game-stats">
+                        <div class="stat">
+                            <div class="stat-value" id="pairs-found">0</div>
+                            <div class="stat-label">Pairs Found</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">6</div>
+                            <div class="stat-label">Total Pairs</div>
+                        </div>
+                    </div>
+
+                    <div class="memory-grid" id="memory-grid"></div>
+
+                    <div class="button-group">
+                        <button onclick="startMemoryGame()">🔄 New Game</button>
+                        <button class="tertiary" onclick="backToGameMenu()">🏠 Menu</button>
+                    </div>
+                `;
+
+                const grid = document.getElementById('memory-grid');
+                memoryCards.forEach((bird, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'memory-card';
+                    card.dataset.index = index;
+                    card.dataset.birdName = bird.name;
+                    card.innerHTML = `
+                        <div class="card-back">🐦</div>
+                        <div class="card-front">
+                            <img src="${bird.images[0]}" alt="${bird.name}">
+                        </div>
+                    `;
+                    card.onclick = () => flipMemoryCard(index);
+                    grid.appendChild(card);
+                });
+
+                container.classList.add('show');
+
+            } catch (error) {
+                showError(containerId, 'Could not load memory game!');
+            }
+        }
+
+        function flipMemoryCard(index) {
+            const card = document.querySelector(`.memory-card[data-index="${index}"]`);
+
+            if (card.classList.contains('flipped') || card.classList.contains('matched') || flippedCards.length === 2) {
+                return;
+            }
+
+            card.classList.add('flipped');
+            flippedCards.push({ index, name: card.dataset.birdName, element: card });
+
+            if (flippedCards.length === 2) {
+                setTimeout(checkMemoryMatch, 800);
+            }
+        }
+
+        function checkMemoryMatch() {
+            const [card1, card2] = flippedCards;
+
+            if (card1.name === card2.name && card1.index !== card2.index) {
+                // Match found
+                card1.element.classList.add('matched');
+                card2.element.classList.add('matched');
+                matchedPairs++;
+                document.getElementById('pairs-found').textContent = matchedPairs;
+
+                if (matchedPairs === 6) {
+                    setTimeout(() => {
+                        alert('🎉 Congratulations! You found all pairs!');
+                    }, 500);
+                }
+            } else {
+                // No match
+                card1.element.classList.remove('flipped');
+                card2.element.classList.remove('flipped');
+            }
+
+            flippedCards = [];
+        }
+
+        /* ========================================
+           GAME 4: BIRD QUIZ
+           ======================================== */
+        async function startQuizGame() {
+            document.getElementById('game-menu').style.display = 'none';
+            const containerId = 'game-display';
+            showLoading(containerId);
+
+            try {
+                const correctBird = await getRandomBird();
+                const wrongBirds = [];
+
+                while (wrongBirds.length < 3) {
+                    const bird = await getRandomBird();
+                    if (bird.name !== correctBird.name && !wrongBirds.find(b => b.name === bird.name)) {
+                        wrongBirds.push(bird);
+                    }
+                }
+
+                const allOptions = [correctBird, ...wrongBirds].sort(() => Math.random() - 0.5);
+
+                const container = document.getElementById(containerId);
+                const imageUrl = correctBird.images && correctBird.images[0] ? correctBird.images[0] : '';
+
+                container.innerHTML = `
+                    <div class="challenge-type">❓ Bird Quiz</div>
+                    <p style="margin-bottom: 15px; color: #666;">Which bird is this?</p>
+
+                    <img src="${imageUrl}" alt="Quiz Bird" class="bird-image">
+
+                    <div class="quiz-options" id="quiz-options">
+                        ${allOptions.map(bird => `
+                            <div class="quiz-option" onclick="selectQuizAnswer('${bird.name}', '${correctBird.name}', this)">
+                                ${bird.name}
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="button-group">
+                        <button onclick="startQuizGame()">⏭️ Next Question</button>
+                        <button class="tertiary" onclick="backToGameMenu()">🏠 Menu</button>
+                    </div>
+                `;
+
+                container.classList.add('show');
+
+            } catch (error) {
+                showError(containerId, 'Could not load quiz!');
+            }
+        }
+
+        function selectQuizAnswer(selected, correct, element) {
+            const options = document.querySelectorAll('.quiz-option');
+            options.forEach(opt => opt.classList.add('disabled'));
+
+            if (selected === correct) {
+                element.classList.add('correct');
+            } else {
+                element.classList.add('incorrect');
+                // Highlight the correct answer
+                options.forEach(opt => {
+                    if (opt.textContent.trim() === correct) {
+                        opt.classList.add('correct');
+                    }
+                });
+            }
+        }
+
+        /* ========================================
+           GAME 5: SOUND MATCH
+           ======================================== */
+        async function startSoundMatchGame() {
+            document.getElementById('game-menu').style.display = 'none';
+            const containerId = 'game-display';
+            showLoading(containerId);
+
+            try {
+                // Try up to 5 birds to find one with sound
+                let correctBird = null;
+                let soundData = null;
+                let attempts = 0;
+                const maxAttempts = 5;
+
+                while (attempts < maxAttempts && (!soundData || !soundData.url)) {
+                    correctBird = await getRandomBird();
+                    soundData = await fetchBirdSound(correctBird.sciName || correctBird.name);
+                    attempts++;
+                }
+
+                if (!soundData || !soundData.url) {
+                    // No sound found after multiple attempts, show error
+                    const container = document.getElementById(containerId);
+                    container.innerHTML = `
+                        <div class="placeholder">
+                            <h3>🔇 No Bird Sounds Available</h3>
+                            <p>We couldn't find any bird sounds at the moment.</p>
+                            <p style="margin-top: 15px;">Try another game or come back later!</p>
+                            <div class="button-group" style="margin-top: 20px;">
+                                <button onclick="startSoundMatchGame()">🔄 Try Again</button>
+                                <button class="tertiary" onclick="backToGameMenu()">🏠 Menu</button>
+                            </div>
+                        </div>
+                    `;
+                    container.classList.add('show');
+                    return;
+                }
+
+                const wrongBirds = [];
+                while (wrongBirds.length < 3) {
+                    const bird = await getRandomBird();
+                    if (bird.name !== correctBird.name && !wrongBirds.find(b => b.name === bird.name)) {
+                        wrongBirds.push(bird);
+                    }
+                }
+
+                const allOptions = [correctBird, ...wrongBirds].sort(() => Math.random() - 0.5);
+
+                const container = document.getElementById(containerId);
+                container.innerHTML = `
+                    <div class="challenge-type">🎵 Sound Match</div>
+                    <p style="margin-bottom: 15px; color: #666;">Which bird makes this sound?</p>
+
+                    <audio controls style="width: 100%; margin: 20px 0;">
+                        <source src="${soundData.url}" type="audio/mpeg">
+                    </audio>
+
+                    <div class="quiz-options" id="quiz-options">
+                        ${allOptions.map(bird => `
+                            <div class="quiz-option" onclick="selectSoundAnswer('${bird.name}', '${correctBird.name}', this)">
+                                ${bird.name}
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="button-group">
+                        <button onclick="startSoundMatchGame()">⏭️ Next Sound</button>
+                        <button class="tertiary" onclick="backToGameMenu()">🏠 Menu</button>
+                    </div>
+                `;
+
+                container.classList.add('show');
+
+                setTimeout(() => {
+                    const audio = container.querySelector('audio');
+                    if (audio) audio.play().catch(e => console.log('Auto-play prevented:', e));
+                }, 100);
+
+            } catch (error) {
+                showError(containerId, 'Could not load sound match game!');
+            }
+        }
+
+        function selectSoundAnswer(selected, correct, element) {
+            const options = document.querySelectorAll('.quiz-option');
+            options.forEach(opt => opt.classList.add('disabled'));
+
+            if (selected === correct) {
+                element.classList.add('correct');
+            } else {
+                element.classList.add('incorrect');
+                options.forEach(opt => {
+                    if (opt.textContent.trim() === correct) {
+                        opt.classList.add('correct');
+                    }
+                });
+            }
+        }
+
+        /* ========================================
+           GAME 6: TYPE THE BIRD (Typing Speed Game)
+           ======================================== */
+        let typingGameStartTime = null;
+        let typingGameScore = 0;
+        let typingGameRound = 0;
+        let typingGameBird = null;
+
+        async function startTypingGame() {
+            document.getElementById('game-menu').style.display = 'none';
+            const containerId = 'game-display';
+            typingGameScore = 0;
+            typingGameRound = 0;
+            
+            try {
+                showLoading(containerId);
+                await showTypingGameRound(containerId);
+            } catch (error) {
+                console.error('Error in startTypingGame:', error);
+                showError(containerId, 'Could not load typing game!');
+            }
+        }
+
+        async function showTypingGameRound(containerId) {
+            typingGameRound++;
+            typingGameBird = await getRandomBird();
+            typingGameStartTime = null;
+            
+            const imageUrl = typingGameBird.images && typingGameBird.images[0] 
+                ? typingGameBird.images[0] 
+                : '';
+
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div style="text-align: center;">
+                    <h3 style="color: #20B2AA; margin-bottom: 10px;">Type the Bird - Round ${typingGameRound}</h3>
+                    <p style="color: #666; margin-bottom: 20px;">Type the bird's name as fast as you can!</p>
+                    ${imageUrl ? `<img src="${imageUrl}" alt="${typingGameBird.name}" class="bird-image" style="max-width: 300px; margin: 20px auto; border-radius: 12px;">` : ''}
+                    <div style="margin: 30px 0;">
+                        <input 
+                            type="text" 
+                            id="typing-input" 
+                            placeholder="Type bird name here..." 
+                            autocomplete="off"
+                            style="width: 100%; max-width: 400px; padding: 15px; font-size: 1.1rem; border: 3px solid #20B2AA; border-radius: 8px; text-align: center;"
+                            oninput="checkTypingAnswer()"
+                            onkeydown="if(event.key === 'Enter') checkTypingAnswer()"
+                        >
+                    </div>
+                    <div id="typing-feedback" style="min-height: 50px; margin: 20px 0;"></div>
+                    <div style="margin-top: 20px;">
+                        <p style="color: #666; font-size: 0.9rem;">Score: <strong>${typingGameScore}</strong> | Round: ${typingGameRound}</p>
+                        <button onclick="showTypingGameRound('${containerId}')" style="margin-top: 15px;">⏭️ Next Bird</button>
+                        <button class="tertiary" onclick="backToGameMenu()" style="margin-top: 15px;">🏠 Menu</button>
+                    </div>
+                </div>
+            `;
+            
+            container.classList.add('show');
+            document.getElementById('typing-input').focus();
+        }
+
+        function checkTypingAnswer() {
+            const input = document.getElementById('typing-input');
+            const feedback = document.getElementById('typing-feedback');
+            const userInput = input.value.trim().toLowerCase();
+            const correctName = typingGameBird.name.toLowerCase();
+            
+            if (!typingGameStartTime) {
+                typingGameStartTime = Date.now();
+            }
+            
+            if (userInput === correctName) {
+                const timeTaken = ((Date.now() - typingGameStartTime) / 1000).toFixed(2);
+                const points = Math.max(1, Math.floor(100 / timeTaken));
+                typingGameScore += points;
+                
+                feedback.innerHTML = `
+                    <div style="padding: 15px; background: #E8F5E9; border-radius: 8px; color: #2E7D32; border: 2px solid #4CAF50;">
+                        ✅ Correct! You typed it in ${timeTaken} seconds! (+${points} points)
+                    </div>
+                `;
+                
+                input.disabled = true;
+                input.style.borderColor = '#4CAF50';
+                
+                setTimeout(() => {
+                    showTypingGameRound('game-display');
+                }, 2000);
+            } else if (userInput.length > 0 && correctName.startsWith(userInput)) {
+                feedback.innerHTML = `
+                    <div style="padding: 10px; color: #666; font-size: 0.9rem;">
+                        Keep typing... "${userInput}" ✓
+                    </div>
+                `;
+            }
+        }
+
+        /* ========================================
+           GAME 7: SPEED MATCH (Quick Matching Game)
+           ======================================== */
+        let speedMatchBirds = [];
+        let speedMatchScore = 0;
+        let speedMatchTimeLeft = 30;
+        let speedMatchTimer = null;
+        let speedMatchCurrentIndex = 0;
+
+        async function startSpeedMatchGame() {
+            document.getElementById('game-menu').style.display = 'none';
+            const containerId = 'game-display';
+            speedMatchScore = 0;
+            speedMatchTimeLeft = 30;
+            speedMatchCurrentIndex = 0;
+            
+            try {
+                showLoading(containerId);
+                // Get 10 random birds
+                speedMatchBirds = [];
+                for (let i = 0; i < 10; i++) {
+                    const bird = await getRandomBird();
+                    speedMatchBirds.push(bird);
+                }
+                
+                await showSpeedMatchRound(containerId);
+            } catch (error) {
+                console.error('Error in startSpeedMatchGame:', error);
+                showError(containerId, 'Could not load speed match game!');
+            }
+        }
+
+        async function showSpeedMatchRound(containerId) {
+            const container = document.getElementById(containerId);
+            
+            if (speedMatchCurrentIndex >= speedMatchBirds.length) {
+                // Game over
+                clearInterval(speedMatchTimer);
+                container.innerHTML = `
+                    <div style="text-align: center;">
+                        <h3 style="color: #20B2AA; margin-bottom: 20px;">🎉 Game Over!</h3>
+                        <p style="font-size: 1.2rem; color: #666; margin-bottom: 30px;">
+                            Final Score: <strong style="color: #20B2AA; font-size: 1.5rem;">${speedMatchScore}</strong> / ${speedMatchBirds.length}
+                        </p>
+                        <button onclick="startSpeedMatchGame()">🔄 Play Again</button>
+                        <button class="tertiary" onclick="backToGameMenu()">🏠 Menu</button>
+                    </div>
+                `;
+                container.classList.add('show');
+                return;
+            }
+            
+            const currentBird = speedMatchBirds[speedMatchCurrentIndex];
+            const imageUrl = currentBird.images && currentBird.images[0] 
+                ? currentBird.images[0] 
+                : '';
+            
+            // Generate 4 options (1 correct, 3 random)
+            const options = [currentBird.name];
+            while (options.length < 4) {
+                const randomBird = await getRandomBird();
+                if (!options.includes(randomBird.name)) {
+                    options.push(randomBird.name);
+                }
+            }
+            // Shuffle options
+            options.sort(() => Math.random() - 0.5);
+            
+            container.innerHTML = `
+                <div style="text-align: center;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div style="color: #666;">Score: <strong>${speedMatchScore}</strong></div>
+                        <div style="color: #666;">Time: <strong id="speed-timer">${speedMatchTimeLeft}</strong>s</div>
+                        <div style="color: #666;">${speedMatchCurrentIndex + 1} / ${speedMatchBirds.length}</div>
+                    </div>
+                    <h3 style="color: #20B2AA; margin-bottom: 15px;">Match the Bird!</h3>
+                    ${imageUrl ? `<img src="${imageUrl}" alt="Bird" class="bird-image" style="max-width: 250px; margin: 20px auto; border-radius: 12px;">` : ''}
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 30px 0; max-width: 500px; margin-left: auto; margin-right: auto;">
+                        ${options.map(name => `
+                            <button 
+                                class="quiz-option" 
+                                onclick="selectSpeedMatchAnswer('${name}', '${currentBird.name}', this)"
+                                style="padding: 15px; font-size: 1rem;"
+                            >
+                                ${name}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <button class="tertiary" onclick="backToGameMenu()" style="margin-top: 15px;">🏠 Menu</button>
+                </div>
+            `;
+            
+            // Start timer
+            if (speedMatchTimer) clearInterval(speedMatchTimer);
+            speedMatchTimeLeft = 30;
+            speedMatchTimer = setInterval(() => {
+                speedMatchTimeLeft--;
+                const timerEl = document.getElementById('speed-timer');
+                if (timerEl) {
+                    timerEl.textContent = speedMatchTimeLeft;
+                    if (speedMatchTimeLeft <= 0) {
+                        clearInterval(speedMatchTimer);
+                        showSpeedMatchRound(containerId);
+                    }
+                }
+            }, 1000);
+            
+            container.classList.add('show');
+        }
+
+        function selectSpeedMatchAnswer(selected, correct, element) {
+            clearInterval(speedMatchTimer);
+            const options = document.querySelectorAll('.quiz-option');
+            options.forEach(opt => opt.classList.add('disabled'));
+            
+            if (selected === correct) {
+                element.classList.add('correct');
+                speedMatchScore++;
+                setTimeout(() => {
+                    speedMatchCurrentIndex++;
+                    showSpeedMatchRound('game-display');
+                }, 1000);
+            } else {
+                element.classList.add('incorrect');
+                options.forEach(opt => {
+                    if (opt.textContent.trim() === correct) {
+                        opt.classList.add('correct');
+                    }
+                });
+                setTimeout(() => {
+                    speedMatchCurrentIndex++;
+                    showSpeedMatchRound('game-display');
+                }, 1500);
+            }
+        }
+
+        /* ========================================
+           GAME 8: WORD SCRAMBLE
+           ======================================== */
+        let scrambleGameScore = 0;
+        let scrambleGameRound = 0;
+        let scrambleGameBird = null;
+        let scrambleGameScrambled = '';
+
+        async function startWordScrambleGame() {
+            document.getElementById('game-menu').style.display = 'none';
+            const containerId = 'game-display';
+            scrambleGameScore = 0;
+            scrambleGameRound = 0;
+            
+            try {
+                showLoading(containerId);
+                await showScrambleGameRound(containerId);
+            } catch (error) {
+                console.error('Error in startWordScrambleGame:', error);
+                showError(containerId, 'Could not load word scramble game!');
+            }
+        }
+
+        function scrambleWord(word) {
+            const letters = word.split('');
+            for (let i = letters.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [letters[i], letters[j]] = [letters[j], letters[i]];
+            }
+            return letters.join('').toUpperCase();
+        }
+
+        async function showScrambleGameRound(containerId) {
+            scrambleGameRound++;
+            scrambleGameBird = await getRandomBird();
+            scrambleGameScrambled = scrambleWord(scrambleGameBird.name);
+            
+            const imageUrl = scrambleGameBird.images && scrambleGameBird.images[0] 
+                ? scrambleGameBird.images[0] 
+                : '';
+
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div style="text-align: center;">
+                    <h3 style="color: #20B2AA; margin-bottom: 10px;">Word Scramble - Round ${scrambleGameRound}</h3>
+                    <p style="color: #666; margin-bottom: 20px;">Unscramble the bird's name!</p>
+                    ${imageUrl ? `<img src="${imageUrl}" alt="${scrambleGameBird.name}" class="bird-image" style="max-width: 300px; margin: 20px auto; border-radius: 12px;">` : ''}
+                    <div style="margin: 30px 0;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #20B2AA; letter-spacing: 0.2em; margin: 20px 0; padding: 20px; background: #F0F8F5; border-radius: 12px;">
+                            ${scrambleGameScrambled}
+                        </div>
+                        <input 
+                            type="text" 
+                            id="scramble-input" 
+                            placeholder="Unscramble the word..." 
+                            autocomplete="off"
+                            style="width: 100%; max-width: 400px; padding: 15px; font-size: 1.1rem; border: 3px solid #20B2AA; border-radius: 8px; text-align: center;"
+                            onkeydown="if(event.key === 'Enter') checkScrambleAnswer()"
+                        >
+                    </div>
+                    <div id="scramble-feedback" style="min-height: 50px; margin: 20px 0;"></div>
+                    <div style="margin-top: 20px;">
+                        <p style="color: #666; font-size: 0.9rem;">Score: <strong>${scrambleGameScore}</strong> | Round: ${scrambleGameRound}</p>
+                        <button onclick="checkScrambleAnswer()" style="margin-top: 15px;">✓ Check Answer</button>
+                        <button onclick="showScrambleGameRound('${containerId}')" style="margin-top: 15px;">⏭️ Skip</button>
+                        <button class="tertiary" onclick="backToGameMenu()" style="margin-top: 15px;">🏠 Menu</button>
+                    </div>
+                </div>
+            `;
+            
+            container.classList.add('show');
+            document.getElementById('scramble-input').focus();
+        }
+
+        function checkScrambleAnswer() {
+            const input = document.getElementById('scramble-input');
+            const feedback = document.getElementById('scramble-feedback');
+            const userInput = input.value.trim().toLowerCase();
+            const correctName = scrambleGameBird.name.toLowerCase();
+            
+            if (userInput === correctName) {
+                scrambleGameScore += 10;
+                feedback.innerHTML = `
+                    <div style="padding: 15px; background: #E8F5E9; border-radius: 8px; color: #2E7D32; border: 2px solid #4CAF50;">
+                        ✅ Correct! The answer is "${scrambleGameBird.name}"! (+10 points)
+                    </div>
+                `;
+                
+                input.disabled = true;
+                input.style.borderColor = '#4CAF50';
+                
+                setTimeout(() => {
+                    showScrambleGameRound('game-display');
+                }, 2000);
+            } else {
+                feedback.innerHTML = `
+                    <div style="padding: 15px; background: #FFE5E5; border-radius: 8px; color: #D32F2F; border: 2px solid #F44336;">
+                        ❌ Incorrect. Try again!
+                    </div>
+                `;
+                input.style.borderColor = '#F44336';
+            }
+        }
+
+        /* ========================================
+           GAME 9: TRUE OR FALSE
+           ======================================== */
+        let trueFalseScore = 0;
+        let trueFalseRound = 0;
+        let trueFalseBird = null;
+        let trueFalseStatement = '';
+        let trueFalseAnswer = true;
+
+        async function startTrueFalseGame() {
+            document.getElementById('game-menu').style.display = 'none';
+            const containerId = 'game-display';
+            trueFalseScore = 0;
+            trueFalseRound = 0;
+            
+            try {
+                showLoading(containerId);
+                await showTrueFalseRound(containerId);
+            } catch (error) {
+                console.error('Error in startTrueFalseGame:', error);
+                showError(containerId, 'Could not load true or false game!');
+            }
+        }
+
+        async function showTrueFalseRound(containerId) {
+            trueFalseRound++;
+            trueFalseBird = await getRandomBird();
+            
+            // Generate random true/false statements
+            const statements = [
+                { text: `The ${trueFalseBird.name} is a real bird species.`, answer: true },
+                { text: `The ${trueFalseBird.name} can fly.`, answer: Math.random() > 0.1 }, // Most birds can fly
+                { text: `The ${trueFalseBird.name} is a mammal.`, answer: false },
+                { text: `The ${trueFalseBird.name} lives in the ocean.`, answer: Math.random() > 0.7 }, // Some birds do
+                { text: `The ${trueFalseBird.name} is extinct.`, answer: false }, // Assume not extinct
+                { text: `The ${trueFalseBird.name} is a type of fish.`, answer: false },
+            ];
+            
+            const selected = statements[Math.floor(Math.random() * statements.length)];
+            trueFalseStatement = selected.text;
+            trueFalseAnswer = selected.answer;
+            
+            const imageUrl = trueFalseBird.images && trueFalseBird.images[0] 
+                ? trueFalseBird.images[0] 
+                : '';
+
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div style="text-align: center;">
+                    <h3 style="color: #20B2AA; margin-bottom: 10px;">True or False - Round ${trueFalseRound}</h3>
+                    <p style="color: #666; margin-bottom: 20px;">Is this statement true or false?</p>
+                    ${imageUrl ? `<img src="${imageUrl}" alt="${trueFalseBird.name}" class="bird-image" style="max-width: 250px; margin: 20px auto; border-radius: 12px;">` : ''}
+                    <div style="margin: 30px 0; padding: 20px; background: #F0F8F5; border-radius: 12px; border: 2px solid #20B2AA;">
+                        <p style="font-size: 1.2rem; color: #333; font-weight: 600;">${trueFalseStatement}</p>
+                    </div>
+                    <div style="display: flex; gap: 15px; justify-content: center; margin: 30px 0;">
+                        <button 
+                            onclick="selectTrueFalse(true)" 
+                            style="padding: 20px 40px; font-size: 1.2rem; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;"
+                        >
+                            ✓ TRUE
+                        </button>
+                        <button 
+                            onclick="selectTrueFalse(false)" 
+                            style="padding: 20px 40px; font-size: 1.2rem; background: #F44336; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;"
+                        >
+                            ✗ FALSE
+                        </button>
+                    </div>
+                    <div id="truefalse-feedback" style="min-height: 50px; margin: 20px 0;"></div>
+                    <div style="margin-top: 20px;">
+                        <p style="color: #666; font-size: 0.9rem;">Score: <strong>${trueFalseScore}</strong> | Round: ${trueFalseRound}</p>
+                        <button onclick="showTrueFalseRound('${containerId}')" style="margin-top: 15px; display: none;" id="truefalse-next">⏭️ Next Question</button>
+                        <button class="tertiary" onclick="backToGameMenu()" style="margin-top: 15px;">🏠 Menu</button>
+                    </div>
+                </div>
+            `;
+            
+            container.classList.add('show');
+        }
+
+        function selectTrueFalse(selected) {
+            const feedback = document.getElementById('truefalse-feedback');
+            const nextBtn = document.getElementById('truefalse-next');
+            const buttons = document.querySelectorAll('button[onclick^="selectTrueFalse"]');
+            
+            buttons.forEach(btn => btn.disabled = true);
+            
+            if (selected === trueFalseAnswer) {
+                trueFalseScore += 10;
+                feedback.innerHTML = `
+                    <div style="padding: 15px; background: #E8F5E9; border-radius: 8px; color: #2E7D32; border: 2px solid #4CAF50;">
+                        ✅ Correct! (+10 points)
+                    </div>
+                `;
+            } else {
+                feedback.innerHTML = `
+                    <div style="padding: 15px; background: #FFE5E5; border-radius: 8px; color: #D32F2F; border: 2px solid #F44336;">
+                        ❌ Incorrect. The answer is ${trueFalseAnswer ? 'TRUE' : 'FALSE'}.
+                    </div>
+                `;
+            }
+            
+            nextBtn.style.display = 'inline-block';
+            setTimeout(() => {
+                showTrueFalseRound('game-display');
+            }, 2000);
+        }
+
+        /* ========================================
+           GAME 10: ALPHABET CHALLENGE
+           ======================================== */
+        let alphabetScore = 0;
+        let alphabetRound = 0;
+        let alphabetLetter = '';
+        let alphabetBirds = [];
+
+        async function startAlphabetGame() {
+            document.getElementById('game-menu').style.display = 'none';
+            const containerId = 'game-display';
+            alphabetScore = 0;
+            alphabetRound = 0;
+            
+            try {
+                showLoading(containerId);
+                await showAlphabetRound(containerId);
+            } catch (error) {
+                console.error('Error in startAlphabetGame:', error);
+                showError(containerId, 'Could not load alphabet game!');
+            }
+        }
+
+        async function showAlphabetRound(containerId) {
+            alphabetRound++;
+            // Pick a random letter
+            alphabetLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+            
+            // Get birds starting with that letter
+            const allBirds = await getCombinedBirdList();
+            alphabetBirds = allBirds.filter(bird => 
+                bird.name && bird.name.toUpperCase().startsWith(alphabetLetter)
+            ).slice(0, 10);
+            
+            if (alphabetBirds.length === 0) {
+                // If no birds found, try next letter
+                alphabetLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+                alphabetBirds = allBirds.filter(bird => 
+                    bird.name && bird.name.toUpperCase().startsWith(alphabetLetter)
+                ).slice(0, 10);
+            }
+            
+            const randomBird = alphabetBirds[Math.floor(Math.random() * alphabetBirds.length)];
+            const imageUrl = randomBird.images && randomBird.images[0] 
+                ? randomBird.images[0] 
+                : '';
+
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div style="text-align: center;">
+                    <h3 style="color: #20B2AA; margin-bottom: 10px;">Alphabet Challenge - Round ${alphabetRound}</h3>
+                    <p style="color: #666; margin-bottom: 20px;">Name a bird that starts with the letter:</p>
+                    <div style="font-size: 4rem; font-weight: bold; color: #20B2AA; margin: 20px 0;">${alphabetLetter}</div>
+                    ${imageUrl ? `<img src="${imageUrl}" alt="Bird" class="bird-image" style="max-width: 250px; margin: 20px auto; border-radius: 12px;">` : ''}
+                    <div style="margin: 30px 0;">
+                        <input 
+                            type="text" 
+                            id="alphabet-input" 
+                            placeholder="Type bird name starting with ${alphabetLetter}..." 
+                            autocomplete="off"
+                            style="width: 100%; max-width: 400px; padding: 15px; font-size: 1.1rem; border: 3px solid #20B2AA; border-radius: 8px; text-align: center;"
+                            onkeydown="if(event.key === 'Enter') checkAlphabetAnswer()"
+                        >
+                    </div>
+                    <div id="alphabet-feedback" style="min-height: 50px; margin: 20px 0;"></div>
+                    <div style="margin-top: 20px;">
+                        <p style="color: #666; font-size: 0.9rem;">Score: <strong>${alphabetScore}</strong> | Round: ${alphabetRound}</p>
+                        <p style="color: #999; font-size: 0.8rem; margin-top: 10px;">Examples: ${alphabetBirds.slice(0, 3).map(b => b.name).join(', ')}</p>
+                        <button onclick="checkAlphabetAnswer()" style="margin-top: 15px;">✓ Check Answer</button>
+                        <button onclick="showAlphabetRound('${containerId}')" style="margin-top: 15px;">⏭️ Next Letter</button>
+                        <button class="tertiary" onclick="backToGameMenu()" style="margin-top: 15px;">🏠 Menu</button>
+                    </div>
+                </div>
+            `;
+            
+            container.classList.add('show');
+            document.getElementById('alphabet-input').focus();
+        }
+
+        function checkAlphabetAnswer() {
+            const input = document.getElementById('alphabet-input');
+            const feedback = document.getElementById('alphabet-feedback');
+            const userInput = input.value.trim();
+            
+            if (!userInput) {
+                feedback.innerHTML = `
+                    <div style="padding: 10px; color: #666;">Please enter a bird name.</div>
+                `;
+                return;
+            }
+            
+            const userUpper = userInput.toUpperCase();
+            const isValid = userUpper.startsWith(alphabetLetter) && 
+                           alphabetBirds.some(bird => bird.name.toUpperCase() === userUpper);
+            
+            if (isValid) {
+                alphabetScore += 15;
+                feedback.innerHTML = `
+                    <div style="padding: 15px; background: #E8F5E9; border-radius: 8px; color: #2E7D32; border: 2px solid #4CAF50;">
+                        ✅ Correct! "${userInput}" is a valid bird! (+15 points)
+                    </div>
+                `;
+                
+                input.disabled = true;
+                input.style.borderColor = '#4CAF50';
+                
+                setTimeout(() => {
+                    showAlphabetRound('game-display');
+                }, 2000);
+            } else {
+                feedback.innerHTML = `
+                    <div style="padding: 15px; background: #FFE5E5; border-radius: 8px; color: #D32F2F; border: 2px solid #F44336;">
+                        ❌ Incorrect. Make sure the bird name starts with "${alphabetLetter}" and is a real bird from our database.
+                    </div>
+                `;
+                input.style.borderColor = '#F44336';
+            }
+        }
+
+        /* ========================================
+           GAME 11: QUICK FLASH
+           ======================================== */
+        let flashScore = 0;
+        let flashRound = 0;
+        let flashBird = null;
+        let flashTimer = null;
+        let flashShown = false;
+
+        async function startQuickFlashGame() {
+            document.getElementById('game-menu').style.display = 'none';
+            const containerId = 'game-display';
+            flashScore = 0;
+            flashRound = 0;
+            
+            try {
+                showLoading(containerId);
+                await showFlashRound(containerId);
+            } catch (error) {
+                console.error('Error in startQuickFlashGame:', error);
+                showError(containerId, 'Could not load quick flash game!');
+            }
+        }
+
+        async function showFlashRound(containerId) {
+            flashRound++;
+            flashBird = await getRandomBird();
+            flashShown = false;
+            
+            const imageUrl = flashBird.images && flashBird.images[0] 
+                ? flashBird.images[0] 
+                : '';
+
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div style="text-align: center;">
+                    <h3 style="color: #20B2AA; margin-bottom: 10px;">Quick Flash - Round ${flashRound}</h3>
+                    <p style="color: #666; margin-bottom: 20px;">The bird will flash for 2 seconds. Remember it!</p>
+                    <div id="flash-image-container" style="margin: 30px 0; min-height: 300px; display: flex; align-items: center; justify-content: center;">
+                        ${imageUrl ? `<img src="${imageUrl}" alt="Bird" id="flash-image" class="bird-image" style="max-width: 300px; border-radius: 12px; opacity: 0;">` : '<p>Loading...</p>'}
+                    </div>
+                    <div id="flash-input-section" style="display: none; margin: 30px 0;">
+                        <input 
+                            type="text" 
+                            id="flash-input" 
+                            placeholder="What bird was that?" 
+                            autocomplete="off"
+                            style="width: 100%; max-width: 400px; padding: 15px; font-size: 1.1rem; border: 3px solid #20B2AA; border-radius: 8px; text-align: center;"
+                            onkeydown="if(event.key === 'Enter') checkFlashAnswer()"
+                        >
+                    </div>
+                    <div id="flash-feedback" style="min-height: 50px; margin: 20px 0;"></div>
+                    <div style="margin-top: 20px;">
+                        <p style="color: #666; font-size: 0.9rem;">Score: <strong>${flashScore}</strong> | Round: ${flashRound}</p>
+                        <button onclick="checkFlashAnswer()" id="flash-check-btn" style="margin-top: 15px; display: none;">✓ Check Answer</button>
+                        <button onclick="showFlashRound('${containerId}')" id="flash-next-btn" style="margin-top: 15px; display: none;">⏭️ Next Flash</button>
+                        <button class="tertiary" onclick="backToGameMenu()" style="margin-top: 15px;">🏠 Menu</button>
+                    </div>
+                </div>
+            `;
+            
+            container.classList.add('show');
+            
+            // Show image for 2 seconds
+            setTimeout(() => {
+                const img = document.getElementById('flash-image');
+                if (img) {
+                    img.style.opacity = '1';
+                    img.style.transition = 'opacity 0.3s';
+                    flashShown = true;
+                }
+            }, 500);
+            
+            setTimeout(() => {
+                const img = document.getElementById('flash-image');
+                const inputSection = document.getElementById('flash-input-section');
+                const checkBtn = document.getElementById('flash-check-btn');
+                
+                if (img) img.style.opacity = '0';
+                if (inputSection) inputSection.style.display = 'block';
+                if (checkBtn) checkBtn.style.display = 'inline-block';
+                
+                const input = document.getElementById('flash-input');
+                if (input) {
+                    input.focus();
+                    setTimeout(() => input.focus(), 100);
+                }
+            }, 2500);
+        }
+
+        function checkFlashAnswer() {
+            const input = document.getElementById('flash-input');
+            const feedback = document.getElementById('flash-feedback');
+            const checkBtn = document.getElementById('flash-check-btn');
+            const nextBtn = document.getElementById('flash-next-btn');
+            const userInput = input.value.trim().toLowerCase();
+            const correctName = flashBird.name.toLowerCase();
+            
+            if (userInput === correctName) {
+                flashScore += 20;
+                feedback.innerHTML = `
+                    <div style="padding: 15px; background: #E8F5E9; border-radius: 8px; color: #2E7D32; border: 2px solid #4CAF50;">
+                        ✅ Correct! It was "${flashBird.name}"! (+20 points)
+                    </div>
+                `;
+                
+                input.disabled = true;
+                input.style.borderColor = '#4CAF50';
+                if (checkBtn) checkBtn.style.display = 'none';
+                if (nextBtn) nextBtn.style.display = 'inline-block';
+                
+                setTimeout(() => {
+                    showFlashRound('game-display');
+                }, 2000);
+            } else {
+                feedback.innerHTML = `
+                    <div style="padding: 15px; background: #FFE5E5; border-radius: 8px; color: #D32F2F; border: 2px solid #F44336;">
+                        ❌ Incorrect. The answer was "${flashBird.name}". Try again!
+                    </div>
+                `;
+                input.style.borderColor = '#F44336';
+            }
+        }
+
+        /* ========================================
+           GAME 12: FLASH CARDS (Memorization Tool)
+           ======================================== */
+        let flashCardBirds = [];
+        let flashCardIndex = 0;
+        let flashCardFlipped = false;
+        let flashCardKnown = 0;
+        let flashCardUnknown = 0;
+        let flashCardCurrentBird = null;
+
+        async function startFlashCardGame() {
+            document.getElementById('game-menu').style.display = 'none';
+            const containerId = 'game-display';
+            flashCardIndex = 0;
+            flashCardFlipped = false;
+            flashCardKnown = 0;
+            flashCardUnknown = 0;
+            
+            try {
+                showLoading(containerId);
+                // Get 20 random birds for the flashcard deck
+                flashCardBirds = [];
+                for (let i = 0; i < 20; i++) {
+                    const bird = await getRandomBird();
+                    flashCardBirds.push(bird);
+                }
+                
+                await showFlashCard(containerId);
+            } catch (error) {
+                console.error('Error in startFlashCardGame:', error);
+                showError(containerId, 'Could not load flashcard game!');
+            }
+        }
+
+        async function showFlashCard(containerId) {
+            if (flashCardIndex >= flashCardBirds.length) {
+                // Deck finished - show results
+                const container = document.getElementById(containerId);
+                container.innerHTML = `
+                    <div style="text-align: center;">
+                        <h3 style="color: #20B2AA; margin-bottom: 20px;">🎉 Flashcard Session Complete!</h3>
+                        <div style="background: #F0F8F5; padding: 30px; border-radius: 12px; margin: 20px 0; max-width: 500px; margin-left: auto; margin-right: auto;">
+                            <p style="font-size: 1.1rem; color: #666; margin-bottom: 15px;">Your Results:</p>
+                            <div style="display: flex; justify-content: space-around; margin: 20px 0;">
+                                <div>
+                                    <div style="font-size: 2rem; color: #4CAF50; font-weight: bold;">${flashCardKnown}</div>
+                                    <div style="color: #666; font-size: 0.9rem;">Known</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 2rem; color: #F44336; font-weight: bold;">${flashCardUnknown}</div>
+                                    <div style="color: #666; font-size: 0.9rem;">Need Practice</div>
+                                </div>
+                            </div>
+                            <p style="color: #666; margin-top: 20px;">
+                                You reviewed <strong>${flashCardBirds.length}</strong> birds!
+                            </p>
+                        </div>
+                        <button onclick="startFlashCardGame()" style="margin-top: 20px;">🔄 New Session</button>
+                        <button class="tertiary" onclick="backToGameMenu()" style="margin-top: 15px;">🏠 Menu</button>
+                    </div>
+                `;
+                container.classList.add('show');
+                return;
+            }
+            
+            flashCardCurrentBird = flashCardBirds[flashCardIndex];
+            flashCardFlipped = false;
+            
+            const imageUrl = flashCardCurrentBird.images && flashCardCurrentBird.images[0] 
+                ? flashCardCurrentBird.images[0] 
+                : '';
+            
+            // Fetch quick facts from Wikipedia
+            const wikiData = await fetchWikipediaSummary(flashCardCurrentBird.name);
+            let quickFacts = '';
+            if (wikiData && wikiData.extract) {
+                // Get first 2-3 sentences for quick facts
+                const sentences = wikiData.extract.split(/[.!?]+/).filter(s => s.trim().length > 20).slice(0, 2);
+                quickFacts = sentences.join('. ').trim() + (sentences.length > 0 ? '.' : '');
+            }
+            
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div style="text-align: center;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div style="color: #666; font-size: 0.9rem;">Card ${flashCardIndex + 1} / ${flashCardBirds.length}</div>
+                        <div style="color: #666; font-size: 0.9rem;">
+                            ✓ ${flashCardKnown} | ✗ ${flashCardUnknown}
+                        </div>
+                    </div>
+                    
+                    <div id="flashcard" style="
+                        perspective: 1000px;
+                        width: 100%;
+                        max-width: 400px;
+                        height: 550px;
+                        margin: 20px auto;
+                        cursor: pointer;
+                    " onclick="flipFlashCard()">
+                        <div id="flashcard-inner" style="
+                            position: relative;
+                            width: 100%;
+                            height: 100%;
+                            transform-style: preserve-3d;
+                            transition: transform 0.6s;
+                        ">
+                            <!-- Front of card (bird image) -->
+                            <div id="flashcard-front" style="
+                                position: absolute;
+                                width: 100%;
+                                height: 100%;
+                                backface-visibility: hidden;
+                                background: white;
+                                border-radius: 12px;
+                                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: center;
+                                padding: 20px;
+                                border: 3px solid #20B2AA;
+                            ">
+                                ${imageUrl ? `
+                                    <img src="${imageUrl}" alt="Bird" class="bird-image" style="max-width: 100%; max-height: 350px; border-radius: 8px; object-fit: contain;">
+                                ` : `
+                                    <div style="font-size: 3rem; color: #20B2AA;">🐦</div>
+                                    <p style="color: #666; margin-top: 20px;">Bird Image</p>
+                                `}
+                                <p style="color: #999; margin-top: 20px; font-size: 0.9rem;">Tap to flip</p>
+                            </div>
+                            
+                            <!-- Back of card (bird name + facts) -->
+                            <div id="flashcard-back" style="
+                                position: absolute;
+                                width: 100%;
+                                height: 100%;
+                                backface-visibility: hidden;
+                                background: linear-gradient(135deg, #20B2AA, #4CAF50);
+                                color: white;
+                                border-radius: 12px;
+                                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: flex-start;
+                                padding: 20px;
+                                transform: rotateY(180deg);
+                                overflow-y: auto;
+                            ">
+                                <div style="font-size: 2rem; font-weight: bold; margin-bottom: 10px; text-align: center;">
+                                    ${flashCardCurrentBird.name}
+                                </div>
+                                ${flashCardCurrentBird.sciName ? `
+                                    <div style="font-size: 1.1rem; font-style: italic; opacity: 0.9; margin-bottom: 15px; text-align: center;">
+                                        ${flashCardCurrentBird.sciName}
+                                    </div>
+                                ` : ''}
+                                
+                                ${quickFacts ? `
+                                    <div style="
+                                        background: rgba(255,255,255,0.15);
+                                        padding: 15px;
+                                        border-radius: 8px;
+                                        margin-top: 15px;
+                                        font-size: 0.95rem;
+                                        line-height: 1.5;
+                                        text-align: left;
+                                        max-height: 200px;
+                                        overflow-y: auto;
+                                    ">
+                                        <div style="font-weight: 600; margin-bottom: 8px; font-size: 1rem;">Quick Facts:</div>
+                                        <div style="opacity: 0.95;">${quickFacts}</div>
+                                    </div>
+                                ` : ''}
+                                
+                                <p style="color: rgba(255,255,255,0.8); margin-top: auto; padding-top: 20px; font-size: 0.9rem; text-align: center;">Tap to flip back</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sound player div (outside flashcard so it stays visible) -->
+                    <div id="game-display-sound-player" style="margin-top: 20px;"></div>
+                    
+                    <div id="flashcard-actions" style="margin-top: 30px; display: none;">
+                        <p style="color: #666; margin-bottom: 15px; font-size: 1.1rem;">Did you know this bird?</p>
+                        <div style="display: flex; gap: 15px; justify-content: center;">
+                            <button 
+                                onclick="markFlashCard(true); event.stopPropagation();" 
+                                style="padding: 15px 30px; font-size: 1.1rem; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;"
+                            >
+                                ✓ I Knew It
+                            </button>
+                            <button 
+                                onclick="markFlashCard(false); event.stopPropagation();" 
+                                style="padding: 15px 30px; font-size: 1.1rem; background: #F44336; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;"
+                            >
+                                ✗ Need Practice
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px;">
+                        <button class="tertiary" onclick="backToGameMenu()">🏠 Menu</button>
+                    </div>
+                </div>
+            `;
+            
+            container.classList.add('show');
+        }
+
+        function flipFlashCard() {
+            const inner = document.getElementById('flashcard-inner');
+            const actions = document.getElementById('flashcard-actions');
+            
+            if (!inner) return;
+            
+            flashCardFlipped = !flashCardFlipped;
+            
+            if (flashCardFlipped) {
+                inner.style.transform = 'rotateY(180deg)';
+                if (actions) actions.style.display = 'block';
+            } else {
+                inner.style.transform = 'rotateY(0deg)';
+                if (actions) actions.style.display = 'none';
+            }
+        }
+
+        function markFlashCard(knewIt) {
+            if (knewIt) {
+                flashCardKnown++;
+            } else {
+                flashCardUnknown++;
+            }
+            
+            flashCardIndex++;
+            showFlashCard('game-display');
+        }
+
+        /* ========================================
+           GAME NAVIGATION
+           ======================================== */
+        function backToGameMenu() {
+            document.getElementById('game-menu').style.display = 'grid';
+            document.getElementById('game-display').innerHTML = '';
+            document.getElementById('game-display').classList.remove('show');
+            // Clear any timers
+            if (speedMatchTimer) {
+                clearInterval(speedMatchTimer);
+                speedMatchTimer = null;
+            }
+        }
+
+        /* ========================================
+           INITIALIZATION
+           ======================================== */
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log('🐦 Bird Explorer initialized!');
+            console.log('📱 Mobile-optimized with bottom navigation');
+            console.log('🔑 Using Nuthatch API for bird data');
+            console.log('🎵 Using xeno-canto API for bird sounds');
+            console.log('📖 Using Wikipedia API for bird summaries');
+
+            // Preload bird list for faster searches
+            console.log('Preloading bird database...');
+            await getCombinedBirdList();
+            console.log('✅ Bird database ready!');
+
+            // Pre-build cache of birds with sounds in the background (non-blocking)
+            buildBirdsWithSoundCache().then(() => {
+                console.log('✅ Birds with sound cache ready!');
+            }).catch(err => {
+                console.warn('Could not pre-build sound cache:', err);
+            });
+
+            // Add event listeners for play sound buttons (using event delegation)
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('play-sound-btn') || e.target.closest('.play-sound-btn')) {
+                    const btn = e.target.classList.contains('play-sound-btn') ? e.target : e.target.closest('.play-sound-btn');
+                    const birdName = btn.getAttribute('data-bird-name');
+                    const sciName = btn.getAttribute('data-sci-name');
+                    const containerId = btn.getAttribute('data-container-id');
+                    playSoundForBird(birdName, sciName, containerId);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
