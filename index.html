@@ -1511,24 +1511,23 @@
                 html += `<div class="bird-scientific">${bird.sciName}</div>`;
             }
 
-            // Add Play Sound button only if not from regular bird search
-            // Regular bird search should not have sound playback (use xeno-canto search instead)
+            // Add Play Sound button for all bird displays (including search mode)
+            html += `<button class="secondary play-sound-btn" 
+                data-bird-name="${bird.name.replace(/"/g, '&quot;')}" 
+                data-sci-name="${(bird.sciName || '').replace(/"/g, '&quot;')}" 
+                data-container-id="${containerId}"
+                style="margin-top: 15px;">
+                🎵 Play Sound
+            </button>
+            <div id="${containerId}-sound-player" style="margin-top: 15px;"></div>`;
+            
+            // Automatically load and play sound when in search mode
             const isRegularSearch = containerId === 'search-results-display';
-            if (!isRegularSearch) {
-                html += `<button class="secondary play-sound-btn" 
-                    data-bird-name="${bird.name.replace(/"/g, '&quot;')}" 
-                    data-sci-name="${(bird.sciName || '').replace(/"/g, '&quot;')}" 
-                    data-container-id="${containerId}"
-                    style="margin-top: 15px;">
-                    🎵 Play Sound
-                </button>
-                <div id="${containerId}-sound-player" style="margin-top: 15px;"></div>`;
-            } else {
-                html += `
-                    <div style="margin-top: 15px; padding: 15px; background: #FFF3CD; border-radius: 8px; color: #856404; border-left: 4px solid #FFC107;">
-                        🎵 <strong>Sound Recordings:</strong> Use the "Search Xeno-canto Recordings" section below to find and play sound recordings for this bird.
-                    </div>
-                `;
+            if (isRegularSearch && bird.sciName) {
+                // Automatically fetch and play sound after rendering
+                setTimeout(() => {
+                    playSoundForBird(bird.name, bird.sciName, containerId);
+                }, 500);
             }
 
             // Fetch and display Wikipedia summary
